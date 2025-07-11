@@ -1,0 +1,12 @@
+from weasyprint import HTML
+
+def generate_pdf(structure, floors, area, usage, estimate):
+    html_content = f"""
+    <h1>建物見積書</h1>
+    <p>構造: {structure}</p>
+    <p>階数: {floors}</p>
+    <p>延床面積: {area}㎡</p>
+    <p>用途: {usage}</p>
+    <p>見積金額: {estimate:,}円</p>
+    """
+    HTML(string=html_content).write_pdf("output.pdf")
