@@ -3,6 +3,7 @@ import axios from "axios";
 import styles from "./styles/App.module.css";
 import SelectTypeMenu from "./components/SelectTypeMenu";
 import NumberInputTypeMenu from "./components/NumberInputTypeMenu";
+import UploadSection from "./components/UploadSection";
 
 type LineItem = {
   description: string;
@@ -27,29 +28,26 @@ export default function App() {
   const [estimateState, setEstimateState] = useState<EstimateState>({
     status: "idle",
   });
+  const [imageLoading, setImageLoading] = useState(false);
 
   const handleItemChange = (
-    index: number,
-    field: keyof LineItem,
-    value: string | number
-  ) => {
-    const newItems = [...items];
-    newItems[index][field] =
-      typeof value === "string" && field !== "description"
-        ? Number(value)
-        : value;
-    setItems(newItems);
-  };
+  index: number,
+  field: keyof LineItem,
+  value: string | number
+) => {
+  const newItems = [...items];
+  if (field === "description") {
+    newItems[index][field] = String(value);
+  } else if (field === "quantity" || field === "unitPrice") {
+    newItems[index][field] = Number(value);
+  }
+  setItems(newItems);
+};
 
-  const handleAddItem = () => {
-    setItems([...items, { description: "", quantity: 1, unitPrice: 0 }]);
+const handleRemoveItem = (index: number) => {
+    setItems(items.filter((_, i) => i !== index));
   };
-
-  const handleRemoveItem = (index: number) => {
-    const newItems = items.filter((_, i) => i !== index);
-    setItems(newItems);
-  };
-
+  
   const getTotal = () =>
     items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
 
@@ -71,6 +69,31 @@ export default function App() {
       });
     }
   };
+const handleImageUpload = async (
+  e: React.FormEvent<HTMLFormElement>
+) => {
+ const files = e.target.;
+ if (!files || files.length === 0) return;
+ setImageLoading(true);
+ try {
+   const formData = new FormData();
+   for (let i = 0; i < files.length; i++) {
+     formData.append("files", files[i]); // 複数ファイルを追加
+   }
+   const res = await axios.post("http://localhost:8000/extract-info/", formData, {
+     headers: {
+       "Content-Type": "multipart/form-data",
+     },
+     
+   });
+   console.log("解析結果:", res.data);
+   // 解析結果を setStructure や setFloors に反映してもOK
+ } catch (error) {
+   console.error("画像のアップロードに失敗しました:", error);
+ } finally {
+   setImageLoading(false);
+ }
+};
 
   return (
     <div className={styles.container}>
@@ -97,6 +120,8 @@ export default function App() {
         state={usage}
         setState={setUsage}
       />
+
+      <UploadSection imageLoading={imageLoading} handler={handleImageUpload} setSelectedFiles={setSelectedFiles} />
 
       <h2>明細項目</h2>
       {items.map((item, index) => (
