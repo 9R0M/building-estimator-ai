@@ -1,0 +1,11 @@
+{
+    // Python用設定
+    "python.analysis.typeCheckingMode": "basic",
+    "python.envFile": "${workspaceFolder}/.env",
+    "python.analysis.extraPaths": [
+        "./backend/app",
+        "./backend/app/services",
+        "./backend/app/routers"
+      ],
+    "python.languageServer": "Pylance",
+}
