@@ -75,16 +75,4 @@ async def get_land_price(
        distance_m=round(nearest.distance, 1),
        source=source,
    )
-
-
-    df = pd.DataFrame({
-
-        "location": ["デモ地点"],
-
-        "price": [300000],
-
-        "geometry": [Point(139.7300, 35.6100)]
-
-    })
-
-    return gpd.GeoDataFrame(df, geometry="geometry", crs="EPSG:4326")
+ return gpd.GeoDataFrame(df, geometry="geometry", crs="EPSG:4326")
