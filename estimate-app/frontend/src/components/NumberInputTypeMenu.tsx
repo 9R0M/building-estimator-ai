@@ -1,16 +1,16 @@
-import styles from "../styles/App.module.css";
+import styles from "../styles/TopPage.module.css";
 
 type NumberInputTypeMenuProps = {
-  name: string;
+  label: string;
   state: number;
   setState: React.Dispatch<React.SetStateAction<number>>;
 };
 
 export default function NumberInputTypeMenu(props: NumberInputTypeMenuProps) {
-  const { name, state, setState } = props;
+  const { label, state, setState } = props;
   return (
     <div className={styles.formGroup}>
-      <label>{name}</label>
+      <label>{label}</label>
       <input
         type="number"
         value={state}

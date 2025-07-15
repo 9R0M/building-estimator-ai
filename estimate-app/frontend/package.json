@@ -14,9 +14,12 @@
     "@emotion/styled": "^11.14.1",
     "@mui/material": "^7.2.0",
     "axios": "^1.10.0",
+    "leaflet": "^1.9.4",
     "pdfkit": "^0.17.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-dropzone": "^14.3.8",
+    "react-leaflet": "^5.0.0",
     "react-router-dom": "^7.6.3"
   },
   "devDependencies": {

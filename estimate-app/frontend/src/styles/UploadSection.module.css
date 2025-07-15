@@ -1,0 +1,31 @@
+.dropZone {
+    border: 2px dashed #aaa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    background-color: #f9f9f9;
+}
+
+.dropZone.active {
+    border-color: #0099ff;
+    background-color: #eef9ff;
+}
+
+.previewItem {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 0.5rem;
+}
+
+.error {
+    color: red;
+    margin-top: 0.5rem;
+}
+
+.summary {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #555;
+}

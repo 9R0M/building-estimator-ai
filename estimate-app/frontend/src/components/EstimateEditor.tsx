@@ -25,6 +25,7 @@ const EstimateEditor = () => {
 <tbody>
        {rows.map((row, idx) => (
 <tr key={row.id}>
+       
 <td><input value={row.category} onChange={e => handleChange(idx, 'category', e.target.value)} /></td>
 <td><input value={row.item} onChange={e => handleChange(idx, 'item', e.target.value)} /></td>
 <td><input type="number" value={row.quantity} onChange={e => handleChange(idx, 'quantity', Number(e.target.value))} /></td>
