@@ -1,5 +1,5 @@
 // src/pages/EstimatePage.tsx
-import React, { useState, useEffect, type ChangeEvent } from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import styles from "../styles/EstimatePage.module.css";
 import { axoisApi } from "../apis/axiosCreate";
@@ -9,12 +9,21 @@ import Select from "../components/SelectTypeMenu";
 import UploadSection from "../components/UploadSection";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 import NumberInputTypeMenu from "../components/NumberInputTypeMenu";
-
+ 
+// Leafletのデフォルトアイコンの設定を修正
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+ 
 // ドラッグ＆ドロップされたデータをmapに自動反映するMapPicker
-const MapPicker: React.FC<{ position: [number, number]; setPosition: (pos: [number, number]) => void }> = ({ position, setPosition }) => {
+const MapPicker: React.FC<{ position: [number, number]; setPosition: (pos: [number, number]) => void }> = ({ setPosition }) => {
     useMapEvents({
-        click(e) {
+        click(e: L.LeafletMouseEvent) {
             setPosition([e.latlng.lat, e.latlng.lng]);
         },
     });
@@ -52,7 +61,7 @@ const EstimatePage: React.FC = () => {
             )
         );
     };
-
+ 
     const addItem = () => setItems([...items, { desc: "", qty: 1, unit: 0 }]);
     const removeItem = (i: number) => setItems(items.filter((_, idx) => idx !== i));
     const totalItemsCost = items.reduce((sum, it) => sum + it.qty * it.unit, 0);
@@ -85,7 +94,7 @@ const EstimatePage: React.FC = () => {
             setLoading(false);
         }
     };
-
+ 
     // PDF/Excelダウンロードへのリンク生成
     const downloadPDF = () => {
         window.open(`/auto-estimate/${estimate}/history.pdf`, "_blank");
@@ -109,7 +118,7 @@ const EstimatePage: React.FC = () => {
                 <h2>物件情報</h2>
                 <Select
                     label="構造" value={structure} onChange={setStructure}
-
+ 
                     selectList={[
                         { value: "RC", label: "RC" },
                         { value: "S", label: "S" },
@@ -132,13 +141,19 @@ const EstimatePage: React.FC = () => {
                     value={usage}
                     onChange={setUsage}
                 />
-                <UploadSection
-                    label="図面OＣＲ解析"
-                    files={files}
-                    onUpload={handleOcrUpload}
-                    onFilesChange={(f) => setFiles(f)}
-                    onRemoveFile={(i) => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
-                />
+                <div>
+                    <h3>図面OＣＲ解析</h3>
+                    <UploadSection
+                        files={files}
+                        setFiles={setFiles}
+                        onFileRemove={(i: number) => {
+                            setFiles((prev) => prev.filter((_, idx) => idx !== i));
+                        }}
+                    />
+                    <button type="button" onClick={() => handleOcrUpload(files)}>
+                        OCR解析実行
+                    </button>
+                </div>
                 {ocrText && (
                     <div className={styles.ocrArea}>
                         <h3>OCR抽出内容</h3>
@@ -149,7 +164,10 @@ const EstimatePage: React.FC = () => {
             <div className={styles.section}>
                 <h2>位置・地価情報</h2>
                 <MapContainer center={position} zoom={13} style={{ height: 300 }}>
-                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="© OpenStreetMap" />
+                    <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+                    />
                     <MapPicker position={position} setPosition={setPosition} />
                     <Marker position={position} />
                 </MapContainer>
