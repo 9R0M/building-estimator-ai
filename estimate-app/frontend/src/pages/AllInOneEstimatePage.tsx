@@ -46,20 +46,10 @@ const AllInOneEstimatePage: React.FC = () => {
         }
     };
 
-    const onFilesChange = (selected: File[]) => {
-        setFiles((prev) => {
-            const newOnes = selected
-                .filter(f => f.type.startsWith("image/"))
-                .filter(f => !prev.some(p => p.name === f.name && p.size === f.size))
-                .slice(0, MAX_FILES - prev.length)
-                .map(f => Object.assign(f, { preview: URL.createObjectURL(f) }));
-            if (newOnes.length === 0 && prev.length >= MAX_FILES) {
-                toast.warning(`画像は最大${MAX_FILES}枚までです`);
-            }
-            return [...prev, ...newOnes].slice(0, MAX_FILES);
-        });
+    const wrapperSetFiles = (updater: (prev: FileWithPreview[]) => FileWithPreview[]) => {
+        setFiles(updater);
     };
-    
+
     const removeFile = (idx: number) => {
         setFiles(prev => {
             URL.revokeObjectURL(prev[idx].preview);
@@ -184,7 +174,7 @@ const AllInOneEstimatePage: React.FC = () => {
             {/* 図面 & OCR 任意 */}
             <section className={styles.section}>
                 <h2>図面 & OCR（任意・最大{MAX_FILES}枚）</h2>
-                <UploadSection files={files} setFiles={onFilesChange} />
+                <UploadSection files={files} setFiles={wrapperSetFiles} />
                 <div className={styles.previews}>
                     {files.map((f, i) => (
                         <div key={i} className={styles.previewItem}>

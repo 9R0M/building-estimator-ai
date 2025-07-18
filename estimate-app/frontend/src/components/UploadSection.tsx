@@ -38,6 +38,20 @@ const UploadSection: React.FC<Props> = ({ files, setFiles }) => {
             return next;
         });
     };
+    
+    const onFilesChange = (selected: File[]) => {
+        setFiles((prev) => {
+            const newOnes = selected
+                .filter(f => f.type.startsWith("image/"))
+                .filter(f => !prev.some(p => p.name === f.name && p.size === f.size))
+                .slice(0, MAX_FILES - prev.length)
+                .map(f => Object.assign(f, { preview: URL.createObjectURL(f) }));
+            if (newOnes.length === 0 && prev.length >= MAX_FILES) {
+                toast.warning(`画像は最大${MAX_FILES}枚までです`);
+            }
+            return [...prev, ...newOnes].slice(0, MAX_FILES);
+        });
+    };
 
     useEffect(() => {
         return () => {
