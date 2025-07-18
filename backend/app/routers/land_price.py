@@ -8,7 +8,7 @@ from typing import Optional
 
 import logging
 
-from app.services.land_price_models import load_land_price_data
+from app.services.estimate_logic.land_price_models import load_land_price_data
 
 router = APIRouter(
 
