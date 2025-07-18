@@ -40,25 +40,27 @@ async def get_land_price(
        distance=gdf.geometry.apply(lambda geom: geodesic((geom.y, geom.x), target).meters)
    )
    nearest = gdf2.loc[gdf2["distance"].idxmin()]
+   def _safe_get_value(series_or_value, default):
+       """SeriesまたはスカラーValue から安全に値を取得"""
+       if isinstance(series_or_value, pd.Series):
+           return series_or_value.iloc[0] if len(series_or_value) > 0 else default
+       return series_or_value if series_or_value is not None else default
+   
    return LandPriceResponse(
-       location=nearest.get("L01_001", ""),
-       price=float(nearest.get("L01_006", 0)),
-       use=nearest.get("L01_003"),
-       year=nearest.get("L01_002"),
-       distance_m=round(nearest["distance"], 1)
+       location=str(_safe_get_value(nearest.get("location"), "")),
+       price=float(_safe_get_value(nearest.get("price"), 0)),
+       use=str(_safe_get_value(nearest.get("use"), "住宅地")),
+       year=int(_safe_get_value(nearest.get("year"), 2024)),
+       distance_m=round(float(_safe_get_value(nearest.get("distance"), 0)), 1)
    )
 
 def load_land_price_data(pref_code: str) -> gpd.GeoDataFrame:
-
-    df = pd.DataFrame({
-
-        "location": ["デモ地点"],
-
+    df = pd.DataFrame({        "location": ["デモ地点"],
         "price": [300000],
-
+        "use": ["住宅地"], 
+        "year": [2024],
         "geometry": [Point(139.7300, 35.6100)]
-
-    })
+        })
 
     return gpd.GeoDataFrame(df, geometry="geometry", crs="EPSG:4326")
  

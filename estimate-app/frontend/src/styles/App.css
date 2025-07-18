@@ -1,46 +1,431 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* 完全版css======================================
+
+   リセット＆ボックスモデル
+
+====================================== */
+
+*,
+*::before,
+*::after {
+
+  box-sizing: border-box;
+
+  margin: 0;
+
+  padding: 0;
+
 }
+
+/* ======================================
+
+   ベース設定
+
+====================================== */
 
 body {
- background-color: #f5f5f5;
- font-family: sans-serif;
-}
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+
+  font-family: "Helvetica Neue", Arial, sans-serif;
+
+  color: #ffffff;
+
+  background-color: #000;
+  /* フォールバック背景色 */
+
+  background: url('/path/to/bg.jpg') center center / cover no-repeat fixed;
+
+  min-height: 100vh;
+
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
+/* ======================================
+
+   メインレイアウト
+
+====================================== */
+
+.container {
+
+  max-width: 640px;
+
+  margin: 0 auto;
+
+  padding: 16px;
+
+}
+
+/* ======================================
+
+   セクションデザイン
+
+====================================== */
+
+.section {
+
+  background: rgba(255, 255, 255, 0.15);
+
+  backdrop-filter: blur(20px) saturate(180%);
+
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+
+  border: 1px solid rgba(255, 255, 255, 0.3);
+
+  border-radius: 16px;
+
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+
+  padding: 20px;
+
+  margin-bottom: 24px;
+
+}
+
+/* ======================================
+
+   テキスト系
+
+====================================== */
+
+h1,
+h2 {
+
+  margin-bottom: 12px;
+
+  font-weight: 300;
+
+}
+
+p {
+
+  margin: 8px 0;
+
+}
+
+/* ======================================
+
+   フォーム共通
+
+====================================== */
+
+.formGroup select,
+
+.formGroup input,
+
+button {
+
+  width: 100%;
+
+  padding: 12px;
+
+  margin-top: 8px;
+
+  margin-bottom: 12px;
+
+  border: none;
+
+  border-radius: 8px;
+
+  font-size: 1rem;
+
+}
+
+/* ======================================
+
+   入力＆フォーカス
+
+====================================== */
+
+select,
+
+input {
+
+  background: rgba(255, 255, 255, 0.3);
+
+  color: #000;
+
+}
+
+.formGroup select:focus,
+
+.formGroup input:focus {
+
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+
+  background: rgba(255, 255, 255, 0.5);
+
+}
+
+/* ======================================
+
+   ボタンデザイン
+
+====================================== */
+
+button {
+
+  background: rgba(255, 255, 255, 0.35);
+
+  color: #000;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease, transform 0.1s ease;
+
+}
+
+button:hover:not(:disabled),
+
+button:focus:not(:disabled) {
+
+  background: rgba(255, 255, 255, 0.45);
+
+  transform: translateY(-1px);
+
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+
+}
+
+button:disabled {
+
+  opacity: 0.6;
+
+  cursor: not-allowed;
+
+}
+
+/* ======================================
+
+   プレビュー画像関連
+
+====================================== */
+
+.previews {
+
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 10px;
+
+  margin-top: 16px;
+
+}
+
+.previewItem {
+
+  position: relative;
+
+}
+
+.previewItem img {
+
+  display: block;
+
+  width: 80px;
+
+  height: 80px;
+
+  border-radius: 8px;
+
+  object-fit: cover;
+
+}
+
+.previewItem button {
+
+  position: absolute;
+
+  top: -6px;
+
+  right: -6px;
+
+  background: rgba(255, 60, 60, 0.8);
+
+  color: #fff;
+
+  width: 20px;
+
+  height: 20px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  font-size: 12px;
+
+  line-height: 20px;
+
+  cursor: pointer;
+
+}
+
+/* ======================================
+
+   明細行
+
+====================================== */
+
+.itemRow {
+
+  display: grid;
+
+  grid-template-columns: 2fr 1fr 1fr auto;
+
+  gap: 8px;
+
+  align-items: center;
+
+  margin-bottom: 12px;
+
+}
+
+.itemRow input {
+
+  background: rgba(255, 255, 255, 0.3);
+
+}
+
+.itemRow span {
+
+  text-align: right;
+
+}
+
+/* ======================================
+
+   OCR結果表示
+
+====================================== */
+
+.ocrText {
+
+  background: rgba(0, 0, 0, 0.4);
+
+  color: #fff;
+
+  padding: 12px;
+
+  border-radius: 8px;
+
+  margin-top: 12px;
+
+  white-space: pre-wrap;
+
+  line-height: 1.5;
+
+}
+
+/* ======================================
+
+   エラーメッセージ
+
+====================================== */
+
+.errorMessage {
+
+  color: #ff6b6b;
+
+  margin-top: 4px;
+
+}
+
+/* ======================================
+
+   見積結果出力
+
+====================================== */
+
+.result {
+
+  text-align: center;
+
+  display: flex;
+
+  justify-content: center;
+
+  gap: 8px;
+
+}
+
+.result button {
+
+  width: 48%;
+
+  margin: 8px 1%;
+
+}
+
+/* ======================================
+
+   モバイルレスポンシブ対応
+
+====================================== */
+
+@media only screen and (max-width: 600px) {
+
+  .container {
+
+    padding: 12px;
+
   }
-  to {
-    transform: rotate(360deg);
+
+  .section {
+
+    padding: 16px;
+
+    border-radius: 12px;
+
   }
-}
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+  .formGroup select,
+
+  .formGroup input,
+
+  button {
+
+    font-size: 0.9rem;
+
+    padding: 10px;
+
   }
+
+  .previewItem img {
+
+    width: 60px;
+
+    height: 60px;
+
+  }
+
+  .itemRow {
+
+    grid-template-columns: 1fr 1fr;
+
+    grid-template-rows: auto auto;
+
+  }
+
+  .itemRow span,
+
+  .itemRow button {
+
+    grid-column: span 2;
+
+  }
+
+  .result {
+
+    flex-direction: column;
+
+  }
+
+  .result button {
+
+    width: 100%;
+
+    margin: 8px 0;
+
+  }
+
 }
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
+/* ========== END ========== */

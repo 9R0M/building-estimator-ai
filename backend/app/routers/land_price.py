@@ -6,8 +6,6 @@ from pydantic import BaseModel
 
 from typing import Optional
 
-from geopy.distance import geodesic
-
 import logging
 
 from app.services.land_price_models import load_land_price_data

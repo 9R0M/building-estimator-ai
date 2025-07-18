@@ -1,5 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import EstimatePage from "./pages/EstimatePage";
+import EstimatePage from "./pages/AllInOneEstimatePage";
 import TopPage from "./pages/Toppage";
 
 type LineItem = {
