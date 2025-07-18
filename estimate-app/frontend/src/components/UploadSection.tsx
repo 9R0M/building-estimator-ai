@@ -38,7 +38,8 @@ const UploadSection: React.FC<Props> = ({ files, setFiles }) => {
             return next;
         });
     };
-    
+
+    /* 一旦残す
     const onFilesChange = (selected: File[]) => {
         setFiles((prev) => {
             const newOnes = selected
@@ -52,6 +53,7 @@ const UploadSection: React.FC<Props> = ({ files, setFiles }) => {
             return [...prev, ...newOnes].slice(0, MAX_FILES);
         });
     };
+    */
 
     useEffect(() => {
         return () => {
