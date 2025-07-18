@@ -74,6 +74,8 @@ async def get_land_price(
        distance_m=round(nearest.distance, 1),
        source=source,
    )
+
+# 多分関数名が消えてる
    lat: float = Query(..., ge=-90, le=90, description="緯度（-90〜90）"),
    lon: float = Query(..., ge=-180, le=180, description="経度（-180〜180）"),
    pref_code: str = Query(..., regex=r"^\d{2}$", description="都道府県コード（2桁）")

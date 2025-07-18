@@ -10,6 +10,8 @@ import logging
 
 from app.services.estimate_logic.land_price_models import load_land_price_data
 
+from geopy.distance import geodesic
+
 router = APIRouter(
 
     prefix="/land-price",

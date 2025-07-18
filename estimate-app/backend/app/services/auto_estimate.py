@@ -1,7 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, Query, HTTPException
 from app.services.extract_info import extract_info_from_blueprint
 from app.services.land_price_models import load_land_price_data
-from app.estimate_logic import estimate_cost
+from app.services.estimate_logic.estimate_logic import estimate_cost
 
 router = APIRouter()
 @router.post("/auto-estimate/")

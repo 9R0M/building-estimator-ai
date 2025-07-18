@@ -15,6 +15,7 @@ YOLOを入れるためにvenvで仮想環境を入れている
 ``` bash
 python3 -m venv {project}env
 source ./{project}env/bin/activate
+(for windows .\{project}env\Script\activate)
 cp /mnt/c/Users/tkrly/requirements.txt requirements.txt
 pip3 install -r requirements.txt
 ```
