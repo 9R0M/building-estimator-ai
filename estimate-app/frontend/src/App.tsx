@@ -36,8 +36,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<TopPage />} />
-        <Route path="/estimate" element={<EstimatePage />} />
+        <Route path="/" element={<EstimatePage />} />
+        {/*<Route path="/estimate" element={<EstimatePage />} />*/}
       </Routes>
     </BrowserRouter>
   )
