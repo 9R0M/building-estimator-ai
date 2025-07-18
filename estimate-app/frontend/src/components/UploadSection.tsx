@@ -76,26 +76,24 @@ const UploadSection: React.FC<Props> = ({ files, setFiles }) => {
                 />
             </label>
 
-            {files.length > 0 && (
-                <div className={styles.previews}>
-                    {files.map((f, i) => (
-                        <div key={i} className={styles.previewItem}>
-                            <img
-                                src={f.preview}
-                                alt={f.name}
-                                className={styles.previewImg}
-                            />
-                            <button
-                                type="button"
-                                className={styles.removeBtn}
-                                onClick={() => handleRemove(i)}
-                            >
-                                ×
-                            </button>
-                        </div>
-                    ))}
-                </div>
-            )}
+            <div
+                className={styles.previews}
+                aria-live="polite"
+                aria-atomic="true"
+            >
+                {files.map((f, i) => (
+                    <figure key={i} className={styles.previewItem}>
+                        <img src={f.preview} alt={`選択画像 ${i + 1}`} />
+                        <button
+                            type="button"
+                            aria-label={`画像 ${i + 1} を削除`}
+                            onClick={() => handleRemove(i)}
+                        >
+                            ×
+                        </button>
+                    </figure>
+                ))}
+            </div>
         </div>
     );
 };

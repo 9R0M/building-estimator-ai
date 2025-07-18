@@ -153,83 +153,141 @@ const AllInOneEstimatePage: React.FC = () => {
     const downloadPDF = () => estimate != null && window.open(`/auto-estimate/${estimate}/history.pdf`);
     const downloadExcel = () => estimate != null && window.open(`/auto-estimate/${estimate}/history.xlsx`);
     return (
-        <div className={styles.container}>
+        <div className={styles.container} role="main">
             <ToastContainer position="bottom-right" autoClose={3000} />
+
             <h1>見積システム</h1>
-            {/* 地価取得 */}
-            <section className={styles.section}>
-                <h2>地価取得</h2>
-                <div className={styles.formGroup}>
-                    <select value={prefCode} onChange={e => setPrefCode(e.target.value)}>
-                        <option value="">選択してください</option>
-                        {prefectures.map(p => <option key={p.code} value={p.code}>{p.name}</option>)}
-                    </select>
-                    {errorPref && <p className={styles.errorMessage}>{errorPref}</p>}
-                </div>
-                <button onClick={handleLandPriceFetch} disabled={landPriceLoading}>
-                    {landPriceLoading ? "取得中…" : "地価取得"}
-                </button>
-                {landPrice != null && <p>地価: {landPrice.toLocaleString()} 円/㎡</p>}
+
+            {/* 地価取得セクション */}
+            <section className={styles.section} aria-labelledby="land-price">
+                <h2 id="land-price">地価取得</h2>
+                <form onSubmit={e => { e.preventDefault(); handleLandPriceFetch(); }}>
+                    <div className={styles.formGroup}>
+                        <label htmlFor="pref-select">都道府県を選択（必須）</label>
+                        <select
+                            id="pref-select"
+                            value={prefCode}
+                            onChange={e => setPrefCode(e.target.value)}
+                            required
+                        >
+                            <option value="">選択してください</option>
+                            {prefectures.map(p => (
+                                <option key={p.code} value={p.code}>{p.name}</option>
+                            ))}
+                        </select>
+                        {errorPref && (
+                            <p className={styles.errorMessage} role="alert">
+                                {errorPref}
+                            </p>
+                        )}
+                    </div>
+                    <button type="submit" disabled={landPriceLoading}>
+                        {landPriceLoading ? "取得中…" : "地価取得"}
+                    </button>
+                </form>
+                {landPrice != null && (
+                    <p>地価：<strong>{landPrice.toLocaleString()} 円/㎡</strong></p>
+                )}
             </section>
-            {/* 図面 & OCR 任意 */}
-            <section className={styles.section}>
-                <h2>図面 & OCR（任意・最大{MAX_FILES}枚）</h2>
+
+            {/* 図面＆OCRセクション */}
+            <section className={styles.section} aria-labelledby="ocr-section">
+                <h2 id="ocr-section">図面 &amp; OCR（任意・最大{MAX_FILES}枚）</h2>
                 <UploadSection files={files} setFiles={wrapperSetFiles} />
-                <div className={styles.previews}>
-                    {files.map((f, i) => (
-                        <div key={i} className={styles.previewItem}>
-                            <img src={f.preview} alt={f.name} width={100} />
-                            <button onClick={() => removeFile(i)}>×</button>
-                        </div>
-                    ))}
-                </div>
-                <button onClick={handleOcrUpload} disabled={files.length === 0}>
+                
+                <button
+                    type="button"
+                    onClick={handleOcrUpload}
+                    disabled={files.length === 0}
+                >
                     OCR解析
                 </button>
-                {ocrText && <pre className={styles.ocrText}>{ocrText}</pre>}
+                {ocrText && (
+                    <pre
+                        className={styles.ocrText}
+                        aria-live="polite"
+                        aria-atomic="true"
+                    >
+                        {ocrText}
+                    </pre>
+                )}
             </section>
+
             {/* 明細入力セクション */}
-            <section className={styles.section}>
-                <h2>明細入力</h2>
-                {items.map((it: Item, i: number) => (
-                    <div key={i} className={styles.itemRow}>
-                        <input
-                            placeholder="内容"
-                            value={it.description}
-                            onChange={e => change(i, "description", e.target.value)}
-                        />
-                        <input
-                            type="number"
-                            placeholder="数量"
-                            value={it.quantity}
-                            onChange={e => change(i, "quantity", +e.target.value)}
-                        />
-                        <input
-                            type="number"
-                            placeholder="単価"
-                            value={it.unitPrice}
-                            onChange={e => change(i, "unitPrice", +e.target.value)}
-                        />
-                        <span>{(it.quantity * it.unitPrice).toLocaleString()} 円</span>
-                        <button onClick={() => remove(i)}>削除</button>
-                    </div>
-                ))}
-                <button onClick={add}>＋ 行追加</button>
-                <p>明細合計：{total.toLocaleString()} 円</p>
+            <section className={styles.section} aria-labelledby="items-section">
+                <h2 id="items-section">明細入力</h2>
+                <form onSubmit={e => e.preventDefault()}>
+                    {items.map((it, i) => (
+                        <fieldset
+                            key={i}
+                            className={styles.itemRow}
+                            aria-labelledby={`item-${i}-legend`}
+                        >
+                            <legend id={`item-${i}-legend`}>項目 {i + 1}</legend>
+                            <label>
+                                内容
+                                <input
+                                    required
+                                    type="text"
+                                    placeholder="内容"
+                                    value={it.description}
+                                    onChange={e => change(i, "description", e.target.value)}
+                                />
+                            </label>
+                            <label>
+                                数量
+                                <input
+                                    required
+                                    type="number"
+                                    placeholder="数量"
+                                    min="0"
+                                    value={it.quantity}
+                                    onChange={e => change(i, "quantity", +e.target.value)}
+                                />
+                            </label>
+                            <label>
+                                単価
+                                <input
+                                    required
+                                    type="number"
+                                    placeholder="単価"
+                                    min="0"
+                                    value={it.unitPrice}
+                                    onChange={e => change(i, "unitPrice", +e.target.value)}
+                                />
+                            </label>
+                            <span aria-label={`合計金額：${it.quantity * it.unitPrice} 円`}>
+                                {(it.quantity * it.unitPrice).toLocaleString()} 円
+                            </span>
+                            <button type="button" onClick={() => remove(i)}>削除</button>
+                        </fieldset>
+                    ))}
+                    <button type="button" onClick={add}>＋ 行追加</button>
+                </form>
+                <p>明細合計：<strong>{total.toLocaleString()}</strong> 円</p>
             </section>
 
             {/* 見積り実行セクション */}
-            <section className={styles.section}>
-                <h2>見積結果</h2>
-                <p>小計: {total.toLocaleString()} 円</p>
-                <button onClick={handleEstimate} disabled={loading}>
+            <section className={styles.section} aria-labelledby="estimate-section">
+                <h2 id="estimate-section">見積結果</h2>
+                <p>小計：<strong>{total.toLocaleString()}</strong> 円</p>
+                <button type="button" onClick={handleEstimate} disabled={loading}>
                     {loading ? "実行中…" : "見積り実行"}
                 </button>
                 {estimate != null && (
-                    <div className={styles.result}>
-                        <p>
-                            合計：<strong>{estimate.toLocaleString()} 円</strong>
-                        </p>
+                    <div
+                        className={styles.result}
+                        role="region"
+                        aria-live="polite"
+                        aria-atomic="true"
+                    >
+                        <p>合計：<strong>{estimate.toLocaleString()} 円</strong></p>
+                        <button type="button" onClick={downloadPDF}>
+                            PDFダウンロード
+                        </button>
+                        <button type="button" onClick={downloadExcel}>
+                            Excelダウンロード
+                        </button>
                     </div>
                 )}
             </section>
