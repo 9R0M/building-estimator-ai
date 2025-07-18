@@ -10,6 +10,8 @@ import { prefectures } from "../utils/prefectures.ts";
 
 type FileWithPreview = File & { preview: string };
 type EstimateResponse = { estimated_cost: number | null };
+type LandPriceResponse = { land_price: number | null };
+type OcrResponse = { text: string };
 
 const MAX_FILES = 10;
 
@@ -23,6 +25,7 @@ const AllInOneEstimatePage: React.FC = () => {
     const { items, change, add, remove, isValid, dispatch } = useItems();
     const [estimate, setEstimate] = useState<number | null>(null);
     const [lastAction, setLastAction] = useState<string | null>(null);
+    const [ocrText, setOcrText] = useState("");
 
     const totalItemsCost = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
     const total = totalItemsCost + (landPrice ?? 0);
@@ -35,8 +38,16 @@ const AllInOneEstimatePage: React.FC = () => {
         return true;
     };
 
+    const historyBuffer = {
+        add: (record: any) => {
+            // ここでは localStorage を利用
+            // 必ず文字列化（JSON.stringify）して保存する必要があります
+            localStorage.setItem("lastEstimate", JSON.stringify(record));
+        }
+    };
+
     const onFilesChange = (selected: File[]) => {
-        setFiles(prev => {
+        setFiles((prev) => {
             const newOnes = selected
                 .filter(f => f.type.startsWith("image/"))
                 .filter(f => !prev.some(p => p.name === f.name && p.size === f.size))
@@ -45,9 +56,10 @@ const AllInOneEstimatePage: React.FC = () => {
             if (newOnes.length === 0 && prev.length >= MAX_FILES) {
                 toast.warning(`画像は最大${MAX_FILES}枚までです`);
             }
-            return [...prev, ...newOnes];
+            return [...prev, ...newOnes].slice(0, MAX_FILES);
         });
     };
+    
     const removeFile = (idx: number) => {
         setFiles(prev => {
             URL.revokeObjectURL(prev[idx].preview);

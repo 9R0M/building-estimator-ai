@@ -13,7 +13,8 @@ type State = Item[];
 type Action =
     | { type: 'CHANGE'; idx: number; key: keyof Item; value: string | number }
     | { type: 'ADD' }
-    | { type: 'REMOVE'; idx: number };
+    | { type: 'REMOVE'; idx: number }
+    | { type: 'SUBMIT' };
 
 function validateField(key: keyof Item, value: string | number): string | undefined {
     if (key === 'description') return value ? undefined : '内容を入力してください';
