@@ -1,4 +1,4 @@
-# backend/app/estimate.py
+# backend/app/services/logic/estimate_logic.py
 unit_prices = {
     "RC": 250000,     # 円/㎡
     "SRC": 300000,
@@ -89,6 +89,16 @@ def estimate_cost(structure, area, usage, region, floors, building_age):
 import cv2
 import pytesseract
 import re
+from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
+import shutil
+# === app/services/logic/estimate_logic.py ===
+from app.models.estimate_models import EstimateRequest, EstimateResponse
+from app.models.land_price_dto import LandPriceDTO
+from app.services.logic.land_price_service import ILandPriceRepository
+from app.services.storage.history_repo import IHistoryRepository
+from app.models.history_models import HistoryRecord
+
 def extract_building_info_enhanced(image_path: str):
     image = cv2.imread(image_path)
     if image is None:
@@ -106,9 +116,7 @@ def extract_building_info_enhanced(image_path: str):
         "area": area,
         "raw_text": text
     }
-from fastapi import FastAPI, File, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
-import shutil
+
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
@@ -124,3 +132,10 @@ async def extract_info(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
     result = extract_building_info_enhanced(temp_path)
     return result
+
+class EstimateService():
+    def __init__(self, lp_repo: ILandPriceRepository, history_repo: IHistoryRepository) -> None:
+        pass
+
+    def estimate(self, req: EstimateRequest) -> EstimateResponse:
+        pass

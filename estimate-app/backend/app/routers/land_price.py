@@ -3,9 +3,13 @@
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from typing import Optional
-import logging
-from app.services.estimate_logic.land_price_models import load_land_price_data
 from geopy.distance import geodesic
+import logging
+
+# === app/routers/land_price.py ===
+from app.models.land_price_dto import LandPriceDTO
+from app.services.logic.land_price_service import ILandPriceRepository
+
 
 router = APIRouter(
     prefix="/land-price",
@@ -14,14 +18,7 @@ router = APIRouter(
 
 logger = logging.getLogger(__name__)
 
-class LandPriceResponse(BaseModel):
-    location: str = ""
-    price: float = 0.0
-    use: Optional[str] = None
-    year: Optional[int] = None
-    distance_m: float
-
-@router.get("/", response_model=LandPriceResponse, summary="Get nearest land price")
+@router.get("/", response_model=LandPriceDTO, summary="Get nearest land price")
 
 async def get_land_price(
     lat: float = Query(..., description="Latitude (例: 35.66)"),
@@ -48,7 +45,7 @@ async def get_land_price(
 
     nearest = df.loc[df["distance"].idxmin()]
 
-    return LandPriceResponse(
+    return LandPriceDTO(
         location=nearest.get("L01_001", ""),
         price=float(nearest.get("L01_006", 0)),
         use=nearest.get("L01_003"),

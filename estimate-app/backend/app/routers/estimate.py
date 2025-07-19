@@ -1,11 +1,12 @@
 # backend/app/routers/estimate.py
 
 from fastapi import APIRouter, HTTPException
-from app.models import EstimateWithLocationRequest, EstimateResponse
-from app.land_price_loader import load_land_price_data
-from app.estimate_logic import estimate_cost
 from geopy.distance import geodesic
 import logging
+
+# === app/routers/estimate.py ===
+from app.models.estimate_models import EstimateRequest, EstimateResponse
+from app.services.logic.estimate_logic import EstimateService
 
 router = APIRouter(
     prefix="/estimate",
@@ -16,7 +17,7 @@ logger = logging.getLogger("estimate_with_location")
 
 @router.post("/", response_model=EstimateResponse, summary="建物＋位置情報で見積もり計算")
 
-async def estimate_with_location(req: EstimateWithLocationRequest):
+async def perfome_estimate(req: EstimateRequest):
     logger.info(f"リクエスト受信: {req.json()}")
 
     try:
