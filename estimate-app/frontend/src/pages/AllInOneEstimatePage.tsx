@@ -7,6 +7,9 @@ import styles from "../styles/AllInOneEstimatePage.module.css";
 import UploadSection from "../components/UploadSection";
 import { useItems, type Item } from "../hooks/useItemsReducer";
 import { prefectures } from "../utils/prefectures.ts";
+import SelectTypeMenu from "../components/SelectTypeMenu.tsx";
+import NumberInputTypeMenu from "../components/NumberInputTypeMenu.tsx";
+import { serverUrl } from "../local.env.ts";
 
 type FileWithPreview = File & { preview: string };
 type EstimateResponse = { estimated_cost: number | null };
@@ -26,18 +29,36 @@ const AllInOneEstimatePage: React.FC = () => {
     const [estimate, setEstimate] = useState<number | null>(null);
     const [lastAction, setLastAction] = useState<string | null>(null);
     const [ocrText, setOcrText] = useState("");
+    const [structure, setStructure] = useState("RC");
+    const [floors, setFloors] = useState(1);
+    const [yearOfConstruction, setYearOfConstruction] = useState(0);
+    const [area, setArea] = useState(0);
+    const [usage, setUsage] = useState("ビル");
+
+    const structures = [
+        { label: "RC", value: "RC" },
+        { label: "SRC", value: "SRC" },
+        { label: "S", value: "S" }
+    ];
+
+    const usages = [
+        { label: "ビル", value: "ビル" },
+        { label: "住宅", value: "住宅" },
+        { label: "オフィス", value: "オフィス" },
+        { label: "工場", value: "工場" },
+        { label: "学校", value: "学校" },
+        { label: "商業施設", value: "商業施設" },
+        { label: "病院", value: "病院" },
+        { label: "その他", value: "その他" }
+    ];
 
     const totalItemsCost = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
     const total = totalItemsCost + (landPrice ?? 0);
 
     const validatePref = (v: string): boolean => {
-        if (!v) {
-            toast.error("都道府県を選択してください");
-            return false;
-        }
+        // 都道府県の選択は任意とするが、地価取得時だけ確認したい場合：
         return true;
     };
-
     const historyBuffer = {
         add: (record: any) => {
             // ここでは localStorage を利用
@@ -123,7 +144,11 @@ const AllInOneEstimatePage: React.FC = () => {
     const estimateCtrl = useRef<AbortController | null>(null);
 
     const handleEstimate = async () => {
-        if (!validatePref(prefCode) || !isValid()) return;
+        // 地価取得は必須でも、見積もり実行は任意にする
+        if (!isValid()) {
+            toast.error("明細情報が正しく入力されていません");
+            return;
+        }
         setLoading(true);
 
         const form = new FormData();
@@ -136,7 +161,7 @@ const AllInOneEstimatePage: React.FC = () => {
         );
 
         try {
-            const r = await axios.post<EstimateResponse>("/api/auto-estimate", form);
+            const r = await axios.post<EstimateResponse>(serverUrl + "/api/auto-estimate", form);
             setEstimate(r.data.estimated_cost);
 
             // ✅ 成功したら SUBMIT を dispatchしてトリガーにセット
@@ -168,7 +193,7 @@ const AllInOneEstimatePage: React.FC = () => {
                             id="pref-select"
                             value={prefCode}
                             onChange={e => setPrefCode(e.target.value)}
-                            required
+
                         >
                             <option value="">選択してください</option>
                             {prefectures.map(p => (
@@ -190,11 +215,16 @@ const AllInOneEstimatePage: React.FC = () => {
                 )}
             </section>
 
+            <SelectTypeMenu label="構造" selectList={structures} value={structure} onChange={setStructure} />
+            <NumberInputTypeMenu label="階数" state={floors} setState={setFloors} />
+            <NumberInputTypeMenu label="築年数" state={yearOfConstruction} setState={setYearOfConstruction} />
+            <NumberInputTypeMenu label="面積" state={area} setState={setArea} />
+            <SelectTypeMenu label="用途" selectList={usages} value={usage} onChange={setUsage} />
             {/* 図面＆OCRセクション */}
             <section className={styles.section} aria-labelledby="ocr-section">
                 <h2 id="ocr-section">図面 &amp; OCR（任意・最大{MAX_FILES}枚）</h2>
                 <UploadSection files={files} setFiles={wrapperSetFiles} />
-                
+
                 <button
                     type="button"
                     onClick={handleOcrUpload}

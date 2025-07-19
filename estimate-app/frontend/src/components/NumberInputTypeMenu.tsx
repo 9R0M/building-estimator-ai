@@ -1,4 +1,4 @@
-import styles from "../styles/TopPage.module.css";
+import styles from "../styles/AllInOneEstimatePage.module.css";
 
 type NumberInputTypeMenuProps = {
   label: string;
