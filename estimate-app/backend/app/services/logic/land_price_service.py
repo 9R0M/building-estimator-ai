@@ -4,7 +4,7 @@ from app.models.land_price_dto import LandPriceDTO
 
 class ILandPriceRepository(ABC):
     @abstractmethod
-    def find_nearest(lat: float, lon: float, pref_code: str) -> LandPriceDTO:
+    def find_nearest(self, lat: float, lon: float, pref_code: str) -> LandPriceDTO:
         ...
 
 class LandPriceRepository(ILandPriceRepository):
