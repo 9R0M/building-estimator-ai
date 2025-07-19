@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import Optional
 import logging
 from geopy.distance import geodesic
-from app.services.land_price_models import (
+from app.services.logic.land_price_models import (
    load_land_price_data,  # 現行年度データ取得
    load_old_land_price_data,  # 過去年度データ取得用（仮想）
 )
