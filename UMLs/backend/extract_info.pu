@@ -1,0 +1,68 @@
+@startuml estimate
+
+package "Routers" {
+    class EstimateResponse {
+        - estimated_cost: float
+        - region: str
+    }
+
+
+
+    class EstimateRouter {
+        + estimate_with_location(req: EstimateWithLocationRequest)
+    }
+}
+
+package "Models" {
+    class EstimateWithLocationRequest {
+        + location: Location
+        + building: Building
+    }
+    class Location {
+        - lat: float
+        - lon: float
+        - pref_code: str
+    }
+    class Building {
+        - structure: str
+        - area: float
+        - usage: str
+        - floors: int
+        - building_age: int
+    }
+}
+
+package "Services.estimate_logic" {
+    class EstimateLogic {
+        + estimate_cost(structure, area, usage, region, floors, building_age): float
+    }
+}
+
+package "Services.extract_info" {
+    class ExtractedResult {
+        - structure: Optional[str]
+        - floors: Optional[int]
+        - area: Optional[float]
+        - raw_text: Optional[str]
+        - processed_image_shape: Optional<Tuple[int,int]]
+    }
+
+    class ExtractInfoService {
+        + extract_info_from_blueprint(file: UploadFile): ExtractedResult
+    }
+}
+
+Routers.EstimateRouter --> Models.EstimateWithLocationRequest : uses
+Models.EstimateWithLocationRequest --> Models.Location
+Models.EstimateWithLocationRequest --> Models.Building
+EstimateRouter --> EstimateResponse : returns
+EstimateRouter --> Services.estimate_logic.EstimateLogic : uses
+
+ExtractInfoService --> ExtractedResult : returns
+
+@enduml
+
+•EstimateRouter が EstimateWithLocationRequest を受け取り、EstimateResponse を返す。
+•EstimateWithLocationRequest は Location（緯度・経度・都道府県）と Building（構造／面積／用途／階数／築年）の2つのサブモデルを持ちます。
+•EstimateLogic.estimate_cost はルータから呼ばれて最終的な推定金額（float）を返します。
+•ExtractInfoService が OCR 処理を行い、図面から構造・階数・面積などの情報を ExtractedResult として返す。

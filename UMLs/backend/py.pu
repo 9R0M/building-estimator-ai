@@ -1,0 +1,34 @@
+@startuml AI
+
+package "Routers" {
+    class LandPriceResponse {
+        - location: str
+        - price: float
+        - use: Optional[str]
+        - year: Optional[int]
+        - distance_m: float
+        - source: str
+    }
+
+    class LandPriceRouter {
+        + get_land_price(lat, lon, pref_code)
+    }
+}
+
+package "Services" {
+    class LandPriceModels {
+        + load_land_price_data(pref_code)
+        + load_old_land_price_data(pref_code)
+        + find_nearest_land_price(gdf, lat, lon)
+    }
+}
+
+package "Geopy" {
+    class geodesic
+}
+
+LandPriceRouter --> LandPriceResponse : returns
+LandPriceRouter --> LandPriceModels : uses
+LandPriceModels --> geodesic : uses
+
+@enduml
