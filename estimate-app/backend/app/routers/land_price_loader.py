@@ -51,6 +51,7 @@ async def get_land_price(
    except Exception:
        logger.exception("現行年度地価データの読み込み中にエラー")
        raise HTTPException(status_code=500, detail="地価データの読み込みに失敗しました")
+   
    # --- Step2: 最近傍検索 ---
    try:
        df = gdf.assign(
@@ -60,6 +61,7 @@ async def get_land_price(
    except Exception:
        logger.exception("最近傍地価の算出中にエラー")
        raise HTTPException(status_code=500, detail="地価データの解析に失敗しました")
+   
    # --- Step3: レスポンス整形 ---
    year_val = nearest.get("L01_002")
    try:
@@ -75,4 +77,5 @@ async def get_land_price(
        distance_m=round(nearest.distance, 1),
        source=source,
    )
+
  return gpd.GeoDataFrame(df, geometry="geometry", crs="EPSG:4326")

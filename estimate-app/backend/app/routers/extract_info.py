@@ -11,12 +11,16 @@ class ExtractedResult(BaseModel):
    processed_image_shape: Optional[Tuple[int,int]] = Field(None, description="前処理後画像のサイズ")
 def extract_info_from_blueprint(file: UploadFile) -> ExtractedResult:
    contents = file.file.read()
+
    if not contents:
        raise HTTPException(status_code=400, detail="ファイルが空です")
+   
    nparr = np.frombuffer(contents, np.uint8)
    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
    if img is None:
        raise HTTPException(status_code=400, detail="画像読み込みに失敗しました")
+   
    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
    blur = cv2.medianBlur(gray, 3)
    h, w = blur.shape
@@ -27,15 +31,21 @@ def extract_info_from_blueprint(file: UploadFile) -> ExtractedResult:
    padded = cv2.copyMakeBorder(bw, pad,pad,pad,pad, cv2.BORDER_CONSTANT, value=255)
    text = pytesseract.image_to_string(padded, config="--psm 6 -l jpn+eng")
    structure = None
+
    if re.search(r"RC|鉄筋", text): structure="RC"
    elif re.search(r"S造", text): structure="S"
    elif re.search(r"木造", text): structure="木造"
+
    floors = None
    flm = re.search(r"(?:地上|地下)?(\d+)階", text)
+
    if flm: floors = int(flm.group(1))
+
    area = None
    am = re.search(r"(\d{2,4}(?:\.\d+)?)(?:㎡|平方メートル|平米|m2|sq\s?m)", text)
+
    if am: area = float(am.group(1))
+   
    return ExtractedResult(
        structure=structure,
        floors=floors,
