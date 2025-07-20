@@ -8,6 +8,7 @@ class EstimateRequest(BaseModel):
     area: float
     floors: int
     usage: str
+    building_age: int
     lat: float
     lon: float
     pref_code: str
