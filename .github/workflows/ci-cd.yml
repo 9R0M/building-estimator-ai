@@ -61,14 +61,4 @@ jobs:
                     -e PROMETHEUS_MULTIPROC_DIR=/app/metrics \
                     -v metrics:/app/metrics \
                     -p 8000:8000 $IMAGE
-
-                username: ${{ secrets.SERVER_USER }}
-                key: ${{ secrets.SSH_PRIVATE_KEY }}
-                script: |
-                            docker pull $IMAGE
-                            stop your-app || true
-                            docker rm your-app || true
-                            docker run -d --name your-app \
-                            -e PROMETHEUS_MULTIPROC_DIR=/app/metrics \
-                            -v metrics:/app/metrics \
-                            -p 8000:8000 $IMAGE
+                    

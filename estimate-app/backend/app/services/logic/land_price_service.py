@@ -12,4 +12,4 @@ class LandPriceRepository(ILandPriceRepository):
         pass
 
     def find_nearest(self, lat: float, lon: float, pref_code: str) -> LandPriceDTO:
-        return super().find_nearest(lon, pref_code)
+        ...

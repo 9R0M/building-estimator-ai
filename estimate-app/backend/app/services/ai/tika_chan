@@ -1,0 +1,83 @@
+from fastapi import FastAPI, HTTPException, Header
+from pydantic import BaseModel, Field
+import xgboost as xgb
+import pandas as pd, os
+from threading import Lock
+import optuna
+from prometheus_fastapi_instrumentator import Instrumentator
+import redis
+import ray
+from ray import serve
+
+# --- 初期化 ---
+app = FastAPI()
+Instrumentator().instrument(app).expose(app)
+MODEL_DIR = "models"; os.makedirs(MODEL_DIR, exist_ok=True)
+MODEL_PATH = os.path.join(MODEL_DIR, "model_latest.json")
+LOG_CSV = os.path.join(MODEL_DIR, "train_log.csv")
+
+# Redis セマフォ初期化
+redis_lock = redis.Redis(host='localhost', port=6379, db=0)
+LOCK_KEY = "model_lock"
+ray.init()
+
+# スキーマバージョン
+class FeaturesV1(BaseModel): area: float = Field(..., gt=0); rooms: int = Field(..., ge=1)
+class FeaturesV2(FeaturesV1): age: int = Field(..., ge=0)
+SCHEMA = {"1": FeaturesV1, "2": FeaturesV2}
+PARAMS = {"objective":"reg:squarederror","eta":0.05,"max_depth":6,"eval_metric":"rmse"}
+model: xgb.Booster | None = None
+_initialized = False
+lock = Lock()
+
+def load_model():
+
+   global model, _initialized
+   if _initialized: return
+   _initialized = True
+   if os.path.exists(MODEL_PATH):
+       model = xgb.Booster(); model.load_model(MODEL_PATH)
+   else: model = None
+
+def save_model(bst, best_it):
+   ts = pd.Timestamp.now().strftime("%Y%m%d%H%M%S")
+   bst.save_model(MODEL_PATH)
+   bst.save_model(os.path.join(MODEL_DIR, f"model_{ts}.json"))
+   pd.DataFrame([{"timestamp":ts,"best_iteration":best_it}]) \
+ .to_csv(LOG_CSV, mode='a',header=not os.path.exists(LOG_CSV), index=False)
+
+def unify(version, data):
+   Schema = SCHEMA.get(version)
+   if not Schema: raise HTTPException(400, "Unknown schema version")
+   return Schema(**data).dict()
+@app.post("/api/predict")
+def predict(x_api_version: str = Header(...), payload: dict = None):
+   load_model()
+   data = unify(x_api_version, payload)
+   if model is None: raise HTTPException(503, "No model loaded")
+   pred = float(model.predict(xgb.DMatrix(pd.DataFrame([data])))[0])
+   return {"est": pred}
+@app.post("/api/add_sample_batch")
+def train_batch(samples: list[dict], x_api_version: str = Header(...)):
+   load_model()
+
+   # Redis lock for safe distributed locks
+   with lock, redis_lock.lock(LOCK_KEY, blocking_timeout=10):
+       df = pd.DataFrame([unify(x_api_version, s["features"]) for s in samples]).sample(frac=1)
+       labels = [s["actual"] for s in samples]
+       split = int(0.8 * len(df))
+       dtrain = xgb.DMatrix(df[:split], label=labels[:split])
+       dval = xgb.DMatrix(df[split:], label=labels[split:])
+       bst = xgb.train(PARAMS, dtrain,
+                       num_boost_round=200 if model is None else 100,
+                       evals=[(dtrain,"train"),(dval,"valid")],
+                       early_stopping_rounds=20 if model is None else 10,
+                       xgb_model=model, verbose_eval=False)
+       save_model(bst, bst.best_iteration); globals()['model'] = bst
+       return {"status":"ok","best_it":bst.best_iteration}
+
+# ... HPO, /metrics endpoints as before
+serve.start(detached=True)
+serve.create_backend("model_backend", predict, ray_actor_options={"num_cpus":2})
+serve.create_endpoint("model_endpoint", backend="model_backend", route="/serve/predict")
+ 

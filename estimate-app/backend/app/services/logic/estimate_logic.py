@@ -98,6 +98,7 @@ from app.models.land_price_dto import LandPriceDTO
 from app.services.logic.land_price_service import ILandPriceRepository
 from app.services.storage.history_repo import IHistoryRepository
 from app.models.history_models import HistoryRecord
+from datetime import datetime
 
 def extract_building_info_enhanced(image_path: str):
     image = cv2.imread(image_path)
@@ -133,9 +134,49 @@ async def extract_info(file: UploadFile = File(...)):
     result = extract_building_info_enhanced(temp_path)
     return result
 
-class EstimateService():
-    def __init__(self, lp_repo: ILandPriceRepository, history_repo: IHistoryRepository) -> None:
-        pass
+# Remove duplicate/incomplete EstimateService class
 
+class EstimateService:
+    def __init__(
+        self,
+        lp_repo: ILandPriceRepository,
+        history_repo: IHistoryRepository
+    ) -> None:
+        self.lp_repo = lp_repo
+        self.history_repo = history_repo
     def estimate(self, req: EstimateRequest) -> EstimateResponse:
-        pass
+
+        # 1. 土地価格を取得
+        land: LandPriceDTO = self.lp_repo.find_nearest(
+            req.lat, req.lon, req.pref_code
+        )
+
+        # 2. 建物コストを仮計算
+        building_cost = req.area * 50000 * req.floors  # 単価:50k/m2 × 階数
+
+        # 3. 合計見積もり
+        total = building_cost + land.price * req.area
+
+        # 4. breakdown を構築
+        breakdown = {
+            "building_cost": building_cost,
+            "land_cost": land.price * req.area,
+        }
+
+        # 5. EstimateResponse を作成
+        response = EstimateResponse(
+            estimated_amount=total,
+            breakdown=breakdown,
+            land_price=land,
+        )
+
+        # 6. 履歴を保存
+        record = HistoryRecord(
+            id=0,
+            request=req,
+            response=response,
+            timestamp=datetime.utcnow(),
+        )
+        self.history_repo.save(record)
+        return response
+ 
