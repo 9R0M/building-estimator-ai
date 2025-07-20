@@ -5,10 +5,31 @@ WORKDIR /app
 RUN mkdir -p /app/metrics
 VOLUME /app/metrics
 # 依存先を先にコピー → キャッシュ活用
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libgdal-dev \
+    libproj-dev \
+    libxml2 \
+    libxslt1-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libffi-dev \
+    libpq-dev \
+    tesseract-ocr \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+    # Pythonパッケージインストール（キャッシュ最適化のため順序を工夫）
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt \
 && pip install gunicorn "uvicorn[standard]" \
 && rm -rf /root/.cache/pip
+
 # アプリコードを後でコピー、再ビルド回避
 COPY . .
 # 非 root ユーザーで起動（セキュリティ強化）
