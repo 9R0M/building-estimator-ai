@@ -31,7 +31,7 @@ jobs:
               uses: docker/build-push-action@v6
               with:
                 context: .
-                file: Dockerfile
+                file: ./Dockerfile
                 platforms: ${{ matrix.platform }}
                 push: true
                 tags: your-repo/your-app:${{ github.sha }}
