@@ -16,4 +16,4 @@ class EstimateRequest(BaseModel):
 class EstimateResponse(BaseModel):
     estimated_amount: float
     breakdown: Dict[str, float]
-    land_price: LandPriceDTO
+    land_price: Optional[LandPriceDTO] = None

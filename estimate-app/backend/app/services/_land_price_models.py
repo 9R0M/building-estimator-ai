@@ -6,7 +6,7 @@ import logging
 import geopandas as gpd
 from fastapi import HTTPException
 from geopy.distance import geodesic
-from app.models import LandPriceDTO  # TODO: 必要なモデルを正しくインポート
+from app.models import LandPriceResponse # TODO:仮置きなので今後修正必要
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +54,7 @@ def load_old_land_price_data(pref_code: str) -> gpd.GeoDataFrame:
     """過去年度データ."""
     return _scan_files(pref_code, "old")
 
-def get_nearest_land_price(lat: float, lon: float, pref_code: str) -> LandPriceDTO:
+def get_nearest_land_price(lat: float, lon: float, pref_code: str) -> LandPriceResponse:
     """最寄地価情報を取得してPydantic型で返す。"""
     # データ取得（現行＞過去）
     try:
