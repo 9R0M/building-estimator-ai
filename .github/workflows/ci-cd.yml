@@ -24,8 +24,8 @@ jobs:
               uses: docker/login-action@v3
               with:
                 registry: docker.io
-                username: ${{9r0m}}
-                password: ${{dckr_pat_3G4l7le44aPuhSooS1f36LvpY5I}}
+                username: ${{secrets.DOCKERHUB_USERNAME}}
+                password: ${{secrets.DOCKERHUB_TOKEN}}
 
             - name: Build & Push Image
               uses: docker/build-push-action@v6
