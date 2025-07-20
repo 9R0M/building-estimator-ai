@@ -2,6 +2,8 @@ name: CI/CD Pipeline
 on:
  push:
    branches: [ main ]
+   paths:
+        - backend/estimate-app/**
 jobs:
  build-and-push:
    runs-on: ubuntu-latest
@@ -25,8 +27,8 @@ jobs:
      - name: Build & Push Docker Image
        uses: docker/build-push-action@v6
        with:
-         context: .github/workflows/docker/
-         file: .github/workflows/docker/Dockerfile # ← ここを修正
+         context: ./backend
+         file: ./backend/Dockerfile # ← ここを修正
          platforms: ${{ matrix.platform }}
          push: true
          tags: qurom/building-estimator-ai:${{ github.sha }}
