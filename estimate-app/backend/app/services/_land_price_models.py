@@ -92,7 +92,6 @@ def get_nearest_land_price(lat: float, lon: float, pref_code: str) -> LandPriceD
         logger.warning(f"年度パース失敗: {raw_year}")
         year = None
 
-
     return LandPriceResponse(
         location=nearest.get(KEY_LOCATION, ""),
         price=float(nearest.get(KEY_PRICE, 0)),
