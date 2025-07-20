@@ -26,14 +26,14 @@ jobs:
        uses: docker/build-push-action@v6
        with:
          context: .
-         file: ./Docker  # ← ここを修正
+         file: ./Dockerfile  # ← ここを修正
          platforms: ${{ matrix.platform }}
          push: true
          tags: qurom/building-estimator-ai:${{ github.sha }}
          cache-from: type=gha
          cache-to: type=gha,mode=max
      - name: Set IMAGE env
-       run: echo "IMAGE=your-repo/your-app:${{ github.sha }}" >> $GITHUB_ENV
+       run: echo "IMAGE=qurom/building-estimator-ai:${{ github.sha }}" >> $GITHUB_ENV
  deploy:
    needs: build-and-push
    runs-on: ubuntu-latest
