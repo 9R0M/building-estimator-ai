@@ -26,7 +26,7 @@ jobs:
        uses: docker/build-push-action@v6
        with:
          context: .
-         file: ./Docker/Dockerfile  # ← ここを修正
+         file: ./Docker  # ← ここを修正
          platforms: ${{ matrix.platform }}
          push: true
          tags: qurom/building-estimator-ai:${{ github.sha }}
