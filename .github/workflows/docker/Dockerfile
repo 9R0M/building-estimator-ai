@@ -36,7 +36,9 @@ COPY . .
 RUN addgroup --system app && adduser --system --ingroup app app
 USER app
 # 実行コマンド：Gunicorn + UvicornWorker × 4 workers
+
 CMD ["gunicorn", "main:app","-k", "uvicorn.workers.UvicornWorker","--workers", "4","--bind", "0.0.0.0:8000"]
+
 #.dockerignore に以下追加で無駄ファイルの除外を徹底
 #__pycache__/
 #*.pyc

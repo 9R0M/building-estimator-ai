@@ -18,5 +18,5 @@ class HistoryRepository():
     def save(self, record: HistoryRecord)-> None:
         return None
     
-    def list_all(self) -> List[HistoryRecord]:
-        return []
+    def list_all() -> List[HistoryRecord]:
+        pass
