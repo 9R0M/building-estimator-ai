@@ -1,21 +1,21 @@
-import styles from "../styles/App.module.css";
+import styles from "../styles/AllInOneEstimatePage.module.css";
 
 type SelectTypeMenuProps = {
-  name: string;
-  selectList: string[];
-  state: string;
-  setState: React.Dispatch<React.SetStateAction<string>>;
+  label: string;
+  selectList: {label: string; value: string}[];
+  value: string;
+  onChange: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export default function SelectTypeMenu(props: SelectTypeMenuProps) {
-  const { name, selectList, state, setState } = props;
+  const { label, selectList,  value, onChange } = props;
   return (
     <div className={styles.formGroup}>
-      <label>{name}</label>
-      <select value={state} onChange={(e) => setState(e.target.value)}>
+      <label>{label}</label>
+      <select value= {value} onChange={(e) => onChange(e.target.value)}>
         {selectList.map((s) => (
-          <option key={s} value={s}>
-            {s}
+          <option key={s.label} label={s.label} value={s.value}>
+            {s.label}
           </option>
         ))}
       </select>

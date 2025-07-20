@@ -1,0 +1,64 @@
+
+@startuml sequence
+
+actor User
+participant "AllInOneEstimatePage.tsx" as Page
+participant "UploadSection.tsx" as Upload
+participant "axiosCreate.ts" as Axios
+
+participant "FastAPI Router\nPOST /extract-info/" as ExtractAPI
+participant "OCR処理\n(extract_info.py)" as OCR
+participant "構造AI\n(structure_model.py)" as AI
+
+participant "FastAPI Router\nPOST /estimate" as EstimateAPI
+participant "自動見積サービス\n(auto_estimate.py)" as Estimator
+participant "地価取得\n(land_price_service.py)" as LandPrice
+
+database "地価DB\n(L01.parquet / GeoJSON)" as GeoDB
+database "見積履歴DB\n(SQLite / PostgreSQL)" as HistoryDB
+
+== [1] 図面アップロードと構造情報抽出 ==
+User -> Page : ファイル選択（複数可）
+Page -> Upload : Dropzoneプレビュー生成
+Upload -> Axios : axios.post("/extract-info", FormData)
+Axios -> ExtractAPI : POST /extract-info
+ExtractAPI -> OCR : 保存 + OpenCV前処理
+OCR -> AI : Helix構文/YOLOで構造・面積・階数推定
+AI --> OCR : {構造, 面積, 階数}
+OCR --> ExtractAPI : JSON整形
+ExtractAPI --> Axios : 推定情報(JSON)
+Axios --> Upload : useStateで表示反映
+
+== [2] ユーザーによる情報補正・確定 ==
+User -> Page : 構造/面積/階数の修正、用途・地域を入力
+Page -> Axios : axios.post("/estimate", {構造, 面積, 階数, 用途, 緯度経度})
+Axios -> EstimateAPI : POST /estimate
+
+== [3] 見積演算とDB保存 ==
+EstimateAPI -> Estimator : estimate(data)
+Estimator -> LandPrice : get_land_price(緯度, 経度, 年度)
+LandPrice -> GeoDB : 最近傍抽出 + 地域用途フィルタ
+GeoDB --> LandPrice : 単価 (円/m²)
+LandPrice --> Estimator : 単価 + 所在地情報
+Estimator -> Estimator : 建物係数 × 用途係数 × 階層補正
+Estimator --> EstimateAPI : 見積額
+EstimateAPI -> HistoryDB : INSERT INTO estimate_history
+EstimateAPI --> Axios : 推定結果JSON
+Axios --> Page : 金額表示 + PDF出力可能
+
+== [4] 結果の確認・保存 ==
+User -> Page : 推定内容確認、保存、印刷
+@enduml
+
+
+アップロード　ユーザーが建物図面（PDF/JPEGなど）をアップロード
+OCR・構造推定　Tesseract + AIで階数・構造・面積を画像から自動抽出
+ユーザー修正入力　必要に応じて UI で手動修正（例：階数や構造の再選択）
+推定処理　FastAPIが受け取り、サービス層で地価情報と構造単価を組み合わせて計算
+結果表示　推定結果がフロントエンドに返り、React側で表示
+
+明示したルーティング
+概要　OCR+構造推定
+POST /extract-info/　画像アップロード＋構造解析
+建設費推定　POST /estimate 地価取得＋構造・用途から見積計算
+履歴保存　estimate_history 推定内容をDBに記録

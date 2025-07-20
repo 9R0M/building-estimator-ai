@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../新しいフォルダー"
+		}
+	],
+	"settings": {
+		"python.languageServer": "Pylance"
+	}
+}

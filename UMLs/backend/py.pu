@@ -1,0 +1,187 @@
+@startuml AI
+
+skinparam classAttributeIconSize 0
+
+'=========================
+' 📁 app/models/
+'-------------------------
+' データ構造とDTOの定義を集約
+'=========================
+package "app.models.upload_models" {
+  ' ユーザーがアップロードしたファイルと付随メタ情報を保持
+  class UploadDTO <<file: upload_models.py>> {
+    + file: UploadFile
+    + metadata: Dict[str, Any]
+  }
+}
+
+package "app.models.estimate_models" {
+  ' 建物の情報から見積もりを要求するDTO
+  class EstimateRequest <<file: estimate_models.py>> {
+    + structure: str
+    + area: float
+    + floors: int
+    + usage: str
+    + lat: float
+    + lon: float
+    + pref_code: str
+  }
+
+  ' 見積もり応答、金額・内訳・地価含む
+  class EstimateResponse <<file: estimate_models.py>> {
+    + estimated_amount: float
+    + breakdown: Dict[str, float]
+    + land_price: LandPriceDTO
+  }
+}
+
+package "app.models.land_price_dto" {
+  ' 地価情報のDTO。見積もりに必要な価格や用途、距離などを含む
+  class LandPriceDTO <<file: land_price_dto.py>> {
+    + location: str
+    + price: float
+    + use: Optional[str]
+    + year: Optional[int]
+    + distance_m: float
+    + source: str
+  }
+}
+
+package "app.models.history_models" {
+  ' 見積もり履歴の1レコード。入力・出力・タイムスタンプを保持
+  class HistoryRecord <<file: history_models.py>> {
+    + id: int
+    + request: EstimateRequest
+    + response: EstimateResponse
+    + timestamp: datetime
+  }
+}
+
+'=========================
+' 📁 app/services/logic/
+'-------------------------
+' ビジネスロジックと外部サービス連携
+'=========================
+package "app.services.logic.land_price_service" {
+  ' 地価取得のインターフェース。位置情報から最寄り地価を検索
+  interface ILandPriceRepository <<file: land_price_service.py>> {
+    + find_nearest(lat: float, lon: float, pref_code: str): LandPriceDTO
+  }
+
+  ' Parquet/GeoJSON等から地価を読み込み、最寄りを返す具体実装
+  class LandPriceRepository <<file: land_price_service.py>> {
+    + __init__(data_dir: str)
+    + find_nearest(lat: float, lon: float, pref_code: str): LandPriceDTO
+  }
+
+  LandPriceRepository ..|> ILandPriceRepository
+}
+
+package "app.services.storage.history_repo" {
+  ' 見積もり履歴保存用のインターフェース
+  interface IHistoryRepository <<file: history_repo.py>> {
+    + save(record: HistoryRecord): None
+    + list_all(): List[HistoryRecord]
+  }
+
+  ' ファイルまたはDBへ履歴を保存・取得する具体実装
+  class HistoryRepository <<file: history_repo.py>> {
+    + __init__(db_url: str)
+    + save(record: HistoryRecord): None
+    + list_all(): List[HistoryRecord]
+  }
+
+  HistoryRepository ..|> IHistoryRepository
+}
+
+package "app.services.logic.estimate_logic" {
+  ' 建物情報 + 地価情報 + AI を用いて見積もりを返すメインロジック
+  class EstimateService <<file: estimate_logic.py>> {
+    + __init__(lp_repo: ILandPriceRepository, history_repo: IHistoryRepository)
+    + estimate(req: EstimateRequest): EstimateResponse
+  }
+
+  note right of EstimateService::estimate
+    地価取得 → 構造判定 → 金額計算 → 履歴保存までを一貫して処理
+  end note
+}
+
+'=========================
+' 📁 app/services/ai/
+'-------------------------
+' AI処理（OCR、構造推定）に特化したクラス
+'=========================
+package "app.services.ai.ocr_processor" {
+  ' 図面ファイルを読み込み、テキスト抽出を行うOCR処理
+  class OCRProcessor <<file: ocr_processor.py>> {
+    + preprocess(file: UploadFile): Image
+    + detect_text(img: Image): TextResult
+  }
+
+  note right of OCRProcessor
+    ※Tesseractベースの処理想定。
+    補助関数: def load_image(), def clean_text() など
+  end note
+}
+
+package "app.services.ai.structure_ai" {
+  ' OCRで得たテキストから建物の構造を予測するAIモデル
+  class StructureAI <<file: structure_ai.py>> {
+    + predict(text: TextResult): StructureResult
+  }
+
+  note right of StructureAI
+    モデル例: XGBoostや軽量NNによる分類タスク
+  end note
+}
+
+'=========================
+' 📁 app/routers/
+'-------------------------
+' FastAPI のルーティング層
+'=========================
+package "app.routers.extract_info" {
+  ' 図面ファイルを受け取り、OCR→構造予測→EstimateRequestに変換
+  class ExtractInfoRouter <<file: extract_info.py>> {
+    + extract_info(dto: UploadDTO): EstimateRequest
+  }
+}
+
+package "app.routers.estimate" {
+  ' EstimateRequestを受け取り、EstimateResponseを返すルート
+  class EstimateRouter <<file: estimate.py>> {
+    + perform_estimate(req: EstimateRequest): EstimateResponse
+  }
+}
+
+package "app.routers.land_price" {
+  ' 緯度経度・都道府県コードに応じた地価情報を返すルート
+  class LandPriceRouter <<file: land_price.py>> {
+    + get_land_price(lat: float, lon: float, pref_code: str): LandPriceDTO
+  }
+
+  note right of LandPriceRouter
+    関数のみの場合:
+    - def get_land_price(...)
+  end note
+}
+
+'=========================
+' 関係定義
+'=========================
+ExtractInfoRouter --> OCRProcessor : uses
+OCRProcessor --> StructureAI : uses
+ExtractInfoRouter --> EstimateRouter : passes EstimateRequest
+
+EstimateRouter --> EstimateService : calls estimate(req)
+EstimateService --> ILandPriceRepository : uses
+EstimateService --> IHistoryRepository : uses
+
+LandPriceRouter --> ILandPriceRepository : uses
+
+EstimateResponse --> LandPriceDTO
+HistoryRecord --> EstimateRequest
+HistoryRecord --> EstimateResponse
+EstimateService --> LandPriceDTO
+
+@enduml

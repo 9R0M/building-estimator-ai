@@ -1,0 +1,36 @@
+import React from "react";
+import styles from "../styles/App.module.css";
+type UploadSectionProps = {
+  label: string;
+  files: File[];
+  onUpload: (files: File[]) => Promise<void>;
+  onFilesChange: (e) => void;
+  onRemoveFile: (index: number) => void;
+  imageLoading: boolean;
+  handler: (e: React.FormEvent<HTMLFormElement>) => Promise<void>;
+
+};
+
+export default function UploadSection(props: UploadSectionProps) {
+  const { imageLoading, handler } = props;
+  const handleImageSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // ここでは何もしない、選択だけ（upload は submit ボタンで）
+  };
+  return (
+    <div className={styles.uploadSection}>
+      <h3>図面画像から構造・階数・面積を自動抽出</h3>
+      <div className={styles.uploadInput}>
+        <form onSubmit={handler}>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleImageSelection}
+          />
+          <button type="submit">アップロード</button>
+        </form>
+      </div>
+      {imageLoading && <p className={styles.loadingText}>解析中...</p>}
+    </div>
+  );
+}

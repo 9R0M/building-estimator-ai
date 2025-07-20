@@ -1,0 +1,18 @@
+{
+  // Python用設定
+  "python.analysis.typeCheckingMode": "basic",
+  "python.envFile": "${workspaceFolder}/.env",
+  "python.analysis.extraPaths": [
+    ".estimate-app/backend/app",
+    ".estimate-app/backend/app/services",
+    ".estimate-app/backend/app/routers"
+  ],
+  "python.languageServer": "Pylance",
+  "[yml][github-actions-workflow]": {
+    "editor.defaultFormatter": "redhat.vscode-yaml",
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.autoIndent": "advanced",
+    "editor.formatOnSave": true
+  }
+}
