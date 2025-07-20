@@ -1,5 +1,10 @@
-pycache/
+__pycache__/
 *.pyc
-.git
-.env
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
 metrics/
+.git/
+.env
