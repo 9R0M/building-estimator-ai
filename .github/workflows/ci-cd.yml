@@ -36,7 +36,7 @@ jobs:
    needs: build-and-push
    runs-on: ubuntu-latest
    steps:
-     - name: Checkout repo
+     - name: Checkout repository
        uses: actions/checkout@v3
      - name: Set up SSH
        run: |
@@ -44,10 +44,27 @@ jobs:
          echo "${{ secrets.VPS_KEY }}" > ~/.ssh/id_rsa
          chmod 600 ~/.ssh/id_rsa
          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+     - name: Set up Node.js
+       uses: actions/setup-node@v3
+       with:
+         node-version: '18'
+     - name: Install dependencies and build frontend
+       run: |
+         cd estimate-app/frontend
+         npm ci
+         npm run build
+     - name: Upload dist/ to VPS via SCP
+       uses: appleboy/scp-action@v0.1.3
+       with:
+         host: ${{ secrets.VPS_HOST }}
+         username: ${{ secrets.VPS_USER }}
+         key: ${{ secrets.VPS_KEY }}
+         source: "estimate-app/frontend/dist/*"
+         target: "/home/${{ secrets.VPS_USER }}/frontend-dist"
      - name: SSH into VPS and deploy
        run: |
-         ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-           cd /home/tkrly/building-estimator-ai
+         ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+           cd /home/${{ secrets.VPS_USER }}/building-estimator-ai
            git pull origin main
            docker compose down
            docker compose pull
