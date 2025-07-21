@@ -2,8 +2,6 @@ name: CI/CD Pipeline
 on:
  push:
    branches: [ main ]
-   paths:
-    - estimate-app/backend/**
 jobs:
  build-and-push:
    runs-on: ubuntu-latest
