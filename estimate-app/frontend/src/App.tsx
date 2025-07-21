@@ -1,8 +1,8 @@
+//estimate-app/frontend/src/App.tsx
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import EstimatePage from "./pages/AllInOneEstimatePage";
-import TopPage from "./pages/Toppage";
 
-type LineItem = {
+type LineItem = { //fix
   description: string;
   quantity: number;
   unitPrice: number;
@@ -21,12 +21,12 @@ type LocationInfo = {
   lon: number;
   pref_code: string;
 };
-type EstimateWithLocationRequest = {
+type EstimataRequest = { //fix
   building: BuildingInfo;
   location: LocationInfo;
 };
 
-type EstimateState =
+type EstimateState = //fix
   | { status: "idle" }
   | { status: "loading" }
   | { status: "success"; estimate: number }
