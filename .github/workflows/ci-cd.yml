@@ -18,7 +18,7 @@ jobs:
          registry: docker.io
          username: ${{ secrets.DOCKERHUB_USERNAME }}
          password: ${{ secrets.DOCKERHUB_TOKEN }}
-     - name: Build & Push Backend Image
+     - name: Build & Push Docker Image (Multi-Arch)
        uses: docker/build-push-action@v6
        with:
          context: ./estimate-app/backend
@@ -28,18 +28,6 @@ jobs:
          tags: |
            qurom/building-estimator-ai:latest
            qurom/building-estimator-ai:${{ github.sha }}
-         cache-from: type=gha
-         cache-to: type=gha,mode=max
-     - name: Build & Push Frontend Image
-       uses: docker/build-push-action@v6
-       with:
-         context: ./estimate-app/frontend
-         file: ./estimate-app/frontend/Dockerfile
-         push: true
-         platforms: linux/amd64,linux/arm64
-         tags: |
-           qurom/building-estimator-ai-frontend:latest
-           qurom/building-estimator-ai-frontend:${{ github.sha }}
          cache-from: type=gha
          cache-to: type=gha,mode=max
      - name: Set IMAGE env
