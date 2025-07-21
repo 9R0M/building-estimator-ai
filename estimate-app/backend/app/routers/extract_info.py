@@ -1,6 +1,11 @@
 # estimate_logic/extract_info.py
 from pydantic import BaseModel, Field
 from fastapi import UploadFile, HTTPException
+from fastapi import APIRouter
+router = APIRouter()
+@router.get("/")
+async def test_extract():
+    return {"message":"extract_info ルーターは動いています"}
 import pytesseract, cv2, numpy as np, re
 from typing import Optional, Tuple
 # === app/routers/extract_info.py ===
