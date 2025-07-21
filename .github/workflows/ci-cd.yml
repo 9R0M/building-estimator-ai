@@ -25,8 +25,8 @@ jobs:
      - name: Build & Push Docker Image
        uses: docker/build-push-action@v6
        with:
-         context: ./backend
-         file: ./backend/Dockerfile # ← ここを修正
+         context: ./estimate-app/backend
+         file: ./estimate-app/backend/Dockerfile # ← ここを修正
          platforms: ${{ matrix.platform }}
          push: true
          tags: qurom/building-estimator-ai:${{ github.sha }}
