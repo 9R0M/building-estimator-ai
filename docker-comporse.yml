@@ -1,0 +1,28 @@
+version: '3.9'
+services:
+  backend:
+    build:
+      context: ./estimate-app/backend
+      dockerfile: Dockerfile
+    container_name: estimator-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./estimate-app/backend:/app
+    env_file:
+      - .env
+    restart: always
+
+  frontend:
+    build:
+      context: ./estimate-app/frontend
+      dockerfile: Dockerfile
+    container_name: estimator-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./estimate-app/frontend:/app
+    stdin_open: true
+    tty: true
+    restart: always
+ 

@@ -56,6 +56,6 @@ async def perfome_estimate(req: EstimateRequest):
 
     logger.info(f"見積結果: {cost}")
 
-    return EstimateResponse(estimated_amount=cost, breakdown={}, land_price=None) # TODO:正しい返り値を書く
+    return EstimateResponse(estimated_amount=cost, breakdown={}, land_price=None) # TODO:正しい返り値
 
  
