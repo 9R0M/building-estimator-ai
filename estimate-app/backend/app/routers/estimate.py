@@ -6,7 +6,8 @@ import logging
 
 # === app/routers/estimate.py ===
 from app.models.estimate_models import EstimateRequest, EstimateResponse
-from app.services.logic.estimate_logic import EstimateService
+from app.services.logic.estimate_logic import EstimateService, estimate_cost
+from app.services.logic.land_price_models import load_land_price_data
 
 router = APIRouter(
     prefix="/estimate",
@@ -21,16 +22,16 @@ async def perfome_estimate(req: EstimateRequest):
     logger.info(f"リクエスト受信: {req.json()}")
 
     try:
-        gdf = load_land_price_data(req.location.pref_code)
+        gdf = load_land_price_data(req.pref_code)
 
     except FileNotFoundError as e:
-        logger.warning(f"pref_code='{req.location.pref_code}' の地価データが見つかりません: {e}")
+        logger.warning(f"pref_code='{req.pref_code}' の地価データが見つかりません: {e}")
         raise HTTPException(status_code=404, detail=str(e))
 
     if gdf.empty:
         raise HTTPException(status_code=404, detail="地価データが存在しません")
 
-    target = (req.location.lat, req.location.lon)
+    target = (req.lat, req.lon)
 
     try:
         gdf2 = gdf.assign(
@@ -45,16 +46,16 @@ async def perfome_estimate(req: EstimateRequest):
     region = str(nearest.get("L01_001") or "不明地域")
 
     cost = estimate_cost(
-        req.building.structure,
-        req.building.area,
-        req.building.usage,
+        req.structure,
+        req.area,
+        req.usage,
         region,
-        req.building.floors,
-        req.building.building_age,
+        req.floors,
+        req.building_age,
     )
 
     logger.info(f"見積結果: {cost}")
 
-    return EstimateResponse(estimated_cost=cost, region=region)
+    return EstimateResponse(estimated_amount=cost, breakdown={}, land_price=None) # TODO:正しい返り値を書く
 
  

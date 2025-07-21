@@ -7,8 +7,9 @@ from typing import Optional, Tuple
 from app.models.upload_models import UploadDTO
 from app.models.estimate_models import EstimateRequest
 from app.services.ai.ocr_processor import OCRProcessor
-from app.services.ai.structure_ai import StructureAI
-from app.routers.estimate import EstimateRouter
+# from app.services.ai.structure_ai import StructureAI
+# from app.routers.estimate import EstimateRouter
+
 #class ExtractedResult(BaseModel):
 #   structure: Optional[str] = Field(None, description="建物構造")
 #   floors: Optional[int] = Field(None, description="階数")
@@ -16,9 +17,10 @@ from app.routers.estimate import EstimateRouter
 #   raw_text: Optional[str] = Field(None, description="OCR抽出テキスト")
 #   processed_image_shape: Optional[Tuple[int,int]] = Field(None, description="前処理後画像のサイズ")
 
+# TODO: 関数の実装、特に返り値を直す
 class ExtractInfoRouter(BaseModel):
-    def extract_info(self, dto: UploadDTO) -> ExtractedResult:
-       contents = file.file.read()
+    def extract_info(self, dto: UploadDTO) -> EstimateRequest:
+       contents = dto.file.file.read()
 
        if not contents:
            raise HTTPException(status_code=400, detail="ファイルが空です")
@@ -54,10 +56,15 @@ class ExtractInfoRouter(BaseModel):
 
        if am: area = float(am.group(1))
 
-       return ExtractedResult(
-           structure=structure,
-           floors=floors,
-           area=area,
-           raw_text=text,
-           processed_image_shape=(h+pad*2, w+pad*2),
+       return EstimateRequest(
+           structure="",
+           floors=0,
+           area=0.0,
+           usage="",
+           building_age=0,
+           lat=0.0,
+           lon=0.0,
+           pref_code=""
        )
+        #    raw_text=text,
+        #    processed_image_shape=(h+pad*2, w+pad*2),

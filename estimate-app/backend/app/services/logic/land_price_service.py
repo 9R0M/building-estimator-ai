@@ -7,9 +7,14 @@ class ILandPriceRepository(ABC):
     def find_nearest(self, lat: float, lon: float, pref_code: str) -> LandPriceDTO:
         ...
 
+# TODO: 関数実装をする
 class LandPriceRepository(ILandPriceRepository):
     def __init__(self, data_dir: str) -> None:
         pass
 
     def find_nearest(self, lat: float, lon: float, pref_code: str) -> LandPriceDTO:
-        return super().find_nearest(lon, pref_code)
+        return LandPriceDTO(
+            location="",
+            price=0.0,
+            distance_m=0.0
+        )

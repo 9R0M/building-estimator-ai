@@ -7,6 +7,7 @@ from app.models import (
 )
 
 from app.services.logic.estimate_logic import estimate_cost
+from app.services.logic.land_price_models import load_land_price_data
 from geopy.distance import geodesic
 from app.routers import register_routers
 import logging
@@ -73,4 +74,4 @@ async def estimate_with_location(req: EstimateRequest):
    )
    logger.info(f"見積結果: {cost}")
    # （オプション）履歴記録などここでDB保存も可能
-   return EstimateResponse(estimated_amount=cost, region=region)
+   return EstimateResponse(estimated_amount=cost, breakdown={}, land_price=None) # TODO:正しい返り値を書く

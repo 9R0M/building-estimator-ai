@@ -84,7 +84,7 @@ def estimate_cost(structure, area, usage, region, floors, building_age):
    region_factor = 1.0  # 仮
    total_factor = usage_factor * floor_factor * age_factor * region_factor
    total_cost = area * unit_price * total_factor
-   return round(total_cost)
+   return round(total_cost, 0)
    
 import cv2
 import pytesseract
@@ -133,9 +133,14 @@ async def extract_info(file: UploadFile = File(...)):
     result = extract_building_info_enhanced(temp_path)
     return result
 
+# TODO: 関数実装をする
 class EstimateService():
     def __init__(self, lp_repo: ILandPriceRepository, history_repo: IHistoryRepository) -> None:
         pass
 
     def estimate(self, req: EstimateRequest) -> EstimateResponse:
-        pass
+        return EstimateResponse(
+            estimated_amount=0.0,
+            breakdown={},
+            land_price=None
+        )

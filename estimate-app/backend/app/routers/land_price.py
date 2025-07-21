@@ -9,6 +9,7 @@ import logging
 # === app/routers/land_price.py ===
 from app.models.land_price_dto import LandPriceDTO
 from app.services.logic.land_price_service import ILandPriceRepository
+from app.services.logic.land_price_models import load_land_price_data
 
 
 router = APIRouter(
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 @router.get("/", response_model=LandPriceDTO, summary="Get nearest land price")
 
+# TODO: 関数の特に返り値を修正する
 async def get_land_price(
     lat: float = Query(..., description="Latitude (例: 35.66)"),
     lon: float = Query(..., description="Longitude (例: 139.70)"),
@@ -46,9 +48,7 @@ async def get_land_price(
     nearest = df.loc[df["distance"].idxmin()]
 
     return LandPriceDTO(
-        location=nearest.get("L01_001", ""),
-        price=float(nearest.get("L01_006", 0)),
-        use=nearest.get("L01_003"),
-        year=int(nearest.get("L01_002")) if nearest.get("L01_002") else None,
-        distance_m=round(nearest["distance"], 1)
+        location="",
+        price=float(0),
+        distance_m=0.0
     )
