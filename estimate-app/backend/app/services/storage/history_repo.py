@@ -11,6 +11,7 @@ class IHistoryRepository(ABC):
     def list_all() -> List[HistoryRecord]:
         ...
 
+# TODO: クラス定義、関数実装をする
 class HistoryRepository():
     def __init__(self) -> None:
         pass
@@ -18,5 +19,5 @@ class HistoryRepository():
     def save(self, record: HistoryRecord)-> None:
         return None
     
-    def list_all() -> List[HistoryRecord]:
-        pass
+    def list_all(self) -> List[HistoryRecord]:
+        return []

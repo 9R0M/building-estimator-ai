@@ -6,7 +6,8 @@ gunicorn
 firebase-admin
 # === Supabase 連携（PostgRESTベースAPI用）===
 httpx  # 非同期API通信に使える軽量HTTPクライアント
-supabase-py  # 公式Python SDK（v2はAlpa対応）
+#supabase  
+git+https://github.com/supabase-community/supabase-py.git@v1.0.3
 # === 画像処理 / OCR ===
 opencv-python-headless
 pytesseract
@@ -18,7 +19,7 @@ geopandas
 shapely
 fiona
 pyproj
-gdal
+gdal==3.6.2
 # === 機械学習 / データ処理 ===
 xgboost
 scikit-learn
