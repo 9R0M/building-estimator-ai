@@ -72,9 +72,9 @@ const AllInOneEstimatePage: React.FC = () => {
     };
 
     const removeFile = (idx: number) => {
-        setFiles(prev => {
-            URL.revokeObjectURL(prev[idx].preview);
-            return prev.filter((_, i) => i !== idx);
+        setFiles((prev: FileWithPreview[]) => {
+          URL.revokeObjectURL(prev[idx].preview);
+          return prev.filter((_, i) => i !== idx);
         });
     };
     useEffect(() => {
