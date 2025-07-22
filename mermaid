@@ -1,0 +1,48 @@
+'''mermaid
+classDiagram
+%% Routers
+class EstimateRouter {
+
+    perform_estimate(req): EstimateResponse
+    }
+    class LandPriceRouter {
+    get_land_price(lat, lon, pref_code): LandPriceDTO
+    }
+    class ExtractInfoRouter {
+    extract_info(file): EstimateRequest
+    }
+    %% Logic & Repos
+    class EstimateService {
+
+    land_repo: LandPriceRepository
+    history_repo: HistoryRepository
+
+    estimate(req): EstimateResponse
+    }
+    class LandPriceRepository {
+    find_nearest(lat, lon, pref_code): LandPriceDTO
+    }
+    class HistoryRepository {
+    init(db_url)
+    save(record)
+    }
+    %% AI
+    class OCRProcessor
+    class StructureAI
+    %% DTOs & Models
+    class LandPriceDTO
+    class EstimateRequest
+    class EstimateResponse
+    class HistoryRecord
+    class UploadDTO
+    %% Relations
+    EstimateRouter --> EstimateService
+    LandPriceRouter --> LandPriceRepository
+    EstimateService --> LandPriceRepository
+    EstimateService --> HistoryRepository
+    OCRProcessor --> EstimateService
+    StructureAI --> EstimateService
+    HistoryRepository --> HistoryRecord
+    LandPriceRepository --> LandPriceDTO
+    UploadDTO --> ExtractInfoRouter
+    '''
