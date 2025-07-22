@@ -3,9 +3,9 @@
   "python.analysis.typeCheckingMode": "basic",
   "python.envFile": "${workspaceFolder}/.env",
   "python.analysis.extraPaths": [
-    ".estimate-app/backend/app",
-    ".estimate-app/backend/app/services",
-    ".estimate-app/backend/app/routers"
+    "backend/app",
+    "backend/app/backend/app/services",
+    "backend/app/backend/app/routers"
   ],
   "python.languageServer": "Pylance",
   "[yml][github-actions-workflow]": {

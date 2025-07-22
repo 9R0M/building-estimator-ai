@@ -1,66 +1,62 @@
-# backend/app/routers/land_price.py
 from fastapi import APIRouter, HTTPException, Query
-from pydantic import BaseModel
-from typing import Optional
-import geopandas as gpd
-import pandas as pd
-import logging
-from functools import lru_cache
-from shapely.geometry import Point
 from geopy.distance import geodesic
-router = APIRouter(
-   prefix="/land-price",
-   tags=["land-price"]
-)
+import logging
+from app.models.estimate_models import LandPriceDTO
+from app.services.logic.land_price_models import load_land_price_data, load_old_land_price_data
+router = APIRouter(prefix="/land-price", tags=["land-price"])
 logger = logging.getLogger(__name__)
-class LandPriceResponse(BaseModel):
-   location: str
-   price: float
-   use: Optional[str]
-   year: Optional[int]
-   distance_m: float
-@router.get("/", response_model=LandPriceResponse, summary="Get nearest land price data")
-async def get_land_price(
-   lat: float = Query(..., description="Latitude, e.g. 35.66"),
-   lon: float = Query(..., description="Longitude, e.g. 139.70"),
-   pref_code: str = Query(..., description="Prefecture code, e.g. '13'")
-):
-
-   """
-   指定された緯度・経度・都道府県コードから、
-   最寄りの地価データを返します。
-   """
+def _safe_cast(value, default, cast):
    try:
-       gdf = load_land_price_data(pref_code)
-   except FileNotFoundError as e:
-       logger.warning(f"No data for pref_code={pref_code}: {e}")
-       raise HTTPException(status_code=404, detail=str(e))
-   target = (lat, lon)
-   gdf2 = gdf.assign(
-       distance=gdf.geometry.apply(lambda geom: geodesic((geom.y, geom.x), target).meters)
+       return cast(value) if value is not None else default
+   except (ValueError, TypeError):
+       return default
+@router.get("/", response_model=LandPriceDTO, summary="最寄り地価取得（現行＋旧年度対応）")
+async def get_land_price(
+   lat: float = Query(..., description="緯度（例: 35.66）"),
+   lon: float = Query(..., description="経度（例: 139.70）"),
+   pref_code: str = Query(..., regex=r"^\d{2}$", description="都道府県コード（2桁）")
+):
+   logger.info(f"地価取得 req: lat={lat}, lon={lon}, pref={pref_code}")
+   source = "current"
+   # --- ① 現行データ読み込み ---
+   try:
+       gdf = load_land_price_data(pref_code) #FIX
+       if gdf.empty:
+           raise FileNotFoundError("現行データなし")
+   except FileNotFoundError:
+       logger.warning("現行データなし → 過去年度データへフォールバック")
+       try:
+           gdf = load_old_land_price_data(pref_code) #FIX
+           if gdf.empty:
+               raise FileNotFoundError("旧年度データなし")
+           source = "old"
+       except FileNotFoundError:
+           logger.error("地価データが一切見つかりません")
+           raise HTTPException(status_code=404, detail="地価データが見つかりません")
+       except Exception as e:
+           logger.exception(f"旧年度データ読み込みエラー: {e}")
+           raise HTTPException(status_code=500, detail="旧データ読込失敗")
+   except Exception as e:
+       logger.exception(f"現行データ読込エラー: {e}")
+       raise HTTPException(status_code=500, detail="地価データ読込失敗")
+   # --- ② 最寄点検索 ---
+   try:
+       if hasattr(gdf, "crs") and gdf.crs:
+           gdf = gdf.to_crs(epsg=4326)
+       target = (lat, lon)
+       gdf["distance"] = gdf.geometry.apply(
+           lambda geom: geodesic((geom.y, geom.x), target).meters
+       )
+       nearest = gdf.loc[gdf["distance"].idxmin()]
+   except Exception as e:
+       logger.exception(f"最寄地価算出エラー: {e}")
+       raise HTTPException(status_code=500, detail="地価データ解析に失敗しました")
+   # --- ③ DTO整形と返却 ---
+   return LandPriceDTO(
+       location=_safe_cast(nearest.get("L01_001"), "", str),
+       price=_safe_cast(nearest.get("L01_006"), 0.0, float),
+       use=_safe_cast(nearest.get("L01_003"), "", str),
+       year=_safe_cast(nearest.get("L01_002"), None, int),
+       distance_m=round(_safe_cast(nearest["distance"], 0.0, float), 1),
+       source=source
    )
-   nearest = gdf2.loc[gdf2["distance"].idxmin()]
-   def _safe_get_value(series_or_value, default):
-       """SeriesまたはスカラーValue から安全に値を取得"""
-       if isinstance(series_or_value, pd.Series):
-           return series_or_value.iloc[0] if len(series_or_value) > 0 else default
-       return series_or_value if series_or_value is not None else default
-   
-   return LandPriceResponse(
-       location=str(_safe_get_value(nearest.get("location"), "")),
-       price=float(_safe_get_value(nearest.get("price"), 0)),
-       use=str(_safe_get_value(nearest.get("use"), "住宅地")),
-       year=int(_safe_get_value(nearest.get("year"), 2024)),
-       distance_m=round(float(_safe_get_value(nearest.get("distance"), 0)), 1)
-   )
-
-def load_land_price_data(pref_code: str) -> gpd.GeoDataFrame:
-    df = pd.DataFrame({        "location": ["デモ地点"],
-        "price": [300000],
-        "use": ["住宅地"], 
-        "year": [2024],
-        "geometry": [Point(139.7300, 35.6100)]
-        })
-
-    return gpd.GeoDataFrame(df, geometry="geometry", crs="EPSG:4326")
- 

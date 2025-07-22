@@ -5,8 +5,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import styles from "../styles/AllInOneEstimatePage.module.css";
 import UploadSection from "../components/UploadSection";
-import { useItems, type Item } from "../hooks/useItemsReducer";
-import { prefectures } from "../utils/prefectures.ts";
+import { useItems } from "../hooks/useItemsReducer";
+import { prefectures } from "../../../backend/app/services/logic/prefectures.ts";
 import SelectTypeMenu from "../components/SelectTypeMenu.tsx";
 import NumberInputTypeMenu from "../components/NumberInputTypeMenu.tsx";
 import { serverUrl } from "../local.env.ts";
@@ -22,7 +22,7 @@ const AllInOneEstimatePage: React.FC = () => {
     const [prefCode, setPrefCode] = useState("");
     const [landPrice, setLandPrice] = useState<number | null>(null);
     const [landPriceLoading, setLandPriceLoading] = useState(false);
-    const [errorPref, setErrorPref] = useState("");
+    const [errorPref] = useState("");
     const [loading, setLoading] = useState(false);
     const [files, setFiles] = useState<FileWithPreview[]>([]);
     const { items, change, add, remove, isValid, dispatch } = useItems();
@@ -55,7 +55,7 @@ const AllInOneEstimatePage: React.FC = () => {
     const totalItemsCost = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
     const total = totalItemsCost + (landPrice ?? 0);
 
-    const validatePref = (v: string): boolean => {
+    const validatePref = (_v: string): boolean => {
         // 都道府県の選択は任意とするが、地価取得時だけ確認したい場合：
         return true;
     };
@@ -71,12 +71,7 @@ const AllInOneEstimatePage: React.FC = () => {
         setFiles(updater);
     };
 
-    const removeFile = (idx: number) => {
-        setFiles((prev: FileWithPreview[]) => {
-          URL.revokeObjectURL(prev[idx].preview);
-          return prev.filter((_, i) => i !== idx);
-        });
-    };
+
     useEffect(() => {
         // 一回限りの SUBMIT トリガー処理
         if (lastAction === "SUBMIT") {
@@ -86,7 +81,7 @@ const AllInOneEstimatePage: React.FC = () => {
             // ② 継続学習用AIに Experience Replay を送信
             axios
                 .post(
-                    "/api/add_sample_batch",
+                    serverUrl + "/api/add_sample_batch",
                     {
                         samples: items.map(it => ({
                             features: { area: it.unitPrice, rooms: it.quantity },
@@ -95,7 +90,7 @@ const AllInOneEstimatePage: React.FC = () => {
                     },
                     { headers: { "x-api-version": "2" } }
                 )
-                .catch(err => toast.error("学習データ送信に失敗しました"));
+                .catch(_err => toast.error("学習データ送信に失敗しました"));
 
             // ✅ 一回限りにするためトリガーをリセット
             setLastAction(null);
@@ -111,7 +106,7 @@ const AllInOneEstimatePage: React.FC = () => {
         landPriceCtrl.current = ctrl;
         try {
             const r = await axios.post<LandPriceResponse>(
-                "/api/land-price",
+                serverUrl + "/api/land-price",
                 { pref_code: prefCode },
                 { signal: ctrl.signal }
             );
@@ -134,14 +129,14 @@ const AllInOneEstimatePage: React.FC = () => {
         files.forEach(f => form.append("files", f));
         toast.info("OCR解析中…");
         try {
-            const r = await axios.post<OcrResponse>("/extract-info", form, { signal: ctrl.signal });
+            const r = await axios.post<OcrResponse>(serverUrl + "/extract-info", form, { signal: ctrl.signal });
             setOcrText(r.data.text);
             toast.success("OCR解析完了");
         } catch (e: any) {
             if (!axios.isCancel(e)) toast.error(`OCRエラー: ${e.message}`);
         }
     };
-    const estimateCtrl = useRef<AbortController | null>(null);
+    //const estimateCtrl = useRef<AbortController | null>(null);
 
     const handleEstimate = async () => {
         // 地価取得は必須でも、見積もり実行は任意にする

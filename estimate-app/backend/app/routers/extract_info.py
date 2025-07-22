@@ -1,75 +1,28 @@
-# estimate_logic/extract_info.py
-from pydantic import BaseModel, Field
-from fastapi import UploadFile, HTTPException
-from fastapi import APIRouter
-router = APIRouter()
-@router.get("/")
-async def test_extract():
-    return {"message":"extract_info ルーターは動いています"}
+from fastapi import APIRouter, UploadFile, File, HTTPException
 import pytesseract, cv2, numpy as np, re
-from typing import Optional, Tuple
-# === app/routers/extract_info.py ===
-from app.models.upload_models import UploadDTO
+
 from app.models.estimate_models import EstimateRequest
-from app.services.ai.ocr_processor import OCRProcessor
-# from app.services.ai.structure_ai import StructureAI
-# from app.routers.estimate import EstimateRouter
-
-#class ExtractedResult(BaseModel):
-#   structure: Optional[str] = Field(None, description="建物構造")
-#   floors: Optional[int] = Field(None, description="階数")
-#   area: Optional[float] = Field(None, description="面積（㎡）")
-#   raw_text: Optional[str] = Field(None, description="OCR抽出テキスト")
-#   processed_image_shape: Optional[Tuple[int,int]] = Field(None, description="前処理後画像のサイズ")
-
-# TODO: 関数の実装、特に返り値を直す
-class ExtractInfoRouter(BaseModel):
-    def extract_info(self, dto: UploadDTO) -> EstimateRequest:
-       contents = dto.file.file.read()
-
-       if not contents:
-           raise HTTPException(status_code=400, detail="ファイルが空です")
-       
-       nparr = np.frombuffer(contents, np.uint8)
-       img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-
-       if img is None:
-           raise HTTPException(status_code=400, detail="画像読み込みに失敗しました")
-       
-       gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-       blur = cv2.medianBlur(gray, 3)
-       h, w = blur.shape
-       clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-       enhanced = clahe.apply(blur)
-       _, bw = cv2.threshold(enhanced, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-       pad = 10
-       padded = cv2.copyMakeBorder(bw, pad,pad,pad,pad, cv2.BORDER_CONSTANT, value=255)
-       text = pytesseract.image_to_string(padded, config="--psm 6 -l jpn+eng")
-       structure = None
-
-       if re.search(r"RC|鉄筋", text): structure="RC"
-       elif re.search(r"S造", text): structure="S"
-       elif re.search(r"木造", text): structure="木造"
-
-       floors = None
-       flm = re.search(r"(?:地上|地下)?(\d+)階", text)
-
-       if flm: floors = int(flm.group(1))
-
-       area = None
-       am = re.search(r"(\d{2,4}(?:\.\d+)?)(?:㎡|平方メートル|平米|m2|sq\s?m)", text)
-
-       if am: area = float(am.group(1))
-
-       return EstimateRequest(
-           structure="",
-           floors=0,
-           area=0.0,
-           usage="",
-           building_age=0,
-           lat=0.0,
-           lon=0.0,
-           pref_code=""
-       )
-        #    raw_text=text,
-        #    processed_image_shape=(h+pad*2, w+pad*2),
+router = APIRouter(prefix="/extract", tags=["extract"])
+@router.post("/", response_model=EstimateRequest, summary="OCRで建物情報を抽出")
+async def extract_info(file: UploadFile = File(...)):
+   contents = await file.read()
+   if not contents:
+       raise HTTPException(status_code=400, detail="ファイルが空です")
+   nparr = np.frombuffer(contents, np.uint8)
+   img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+   if img is None:
+       raise HTTPException(status_code=400, detail="画像読み込みに失敗しました")
+   gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+   text = pytesseract.image_to_string(gray, lang='jpn+eng')
+   structure = "RC" if re.search(r"RC|鉄筋", text) else ("S" if re.search(r"S造", text) else ("木造" if re.search(r"木造", text) else ""))
+   floors_match = re.search(r"(?:地上|地下)?(\d+)階", text)
+   floors = int(floors_match.group(1)) if floors_match else 0
+   area_match = re.search(r"(\d{2,4}(?:\.\d+)?)(?:㎡|m2)", text)
+   area = float(area_match.group(1)) if area_match else 0.0
+   return EstimateRequest(
+       structure=structure,
+       floors=floors,
+       area=area,
+       usage="", building_age=0,
+       lat=0.0, lon=0.0, pref_code=""
+   )

@@ -1,0 +1,29 @@
+'''marmeid
+classDiagram
+ FEPage -->|Imports| UploadSection
+ FEPage -->|Imports| useItems
+ FEPage -->|Axios POST| routers.estimate
+ routers.estimate ..> services.ocr_processor : 「OCR」  
+ routers.estimate ..> services.ai.structure_ai : 「構造解析」  
+ routers.estimate ..> services.logic.land_price_service : 「地価検索」  
+ routers.estimate ..> services.logic.estimate_logic : 「見積計算」
+ class FEPage {
+   +handleEstimate()
+   +handleOcrUpload()
+ }
+ class routers.estimate {
+   +perform_estimate(req: EstimateRequest)
+ }
+ class services.ocr_processor {
+   +process(files): string
+ }
+ class services.ai.structure_ai {
+   +predict(text): StructureResult
+ }
+ class services.logic.land_price_service {
+   +find_nearest(pref_code): float
+ }
+ class services.logic.estimate_logic {
+   +estimate(items, area, structure, land_price): int
+ }
+ '''
