@@ -5,8 +5,7 @@ import logging
 import geopandas as gpd
 from app.models.estimate_models import LandPriceDTO
 from app.services.logic.land_price_models import (
-   load_land_price_data,
-   load_old_land_price_data
+   load_land_price_data,load_old_land_price_data
 )
 router = APIRouter(prefix="/land-price", tags=["land-price"])
 logger = logging.getLogger(__name__)

@@ -6,7 +6,7 @@ import "react-toastify/dist/ReactToastify.css";
 import styles from "../styles/AllInOneEstimatePage.module.css";
 import UploadSection from "../components/UploadSection";
 import { useItems } from "../hooks/useItemsReducer";
-import { prefectures } from "../utils/prefectures.ts";
+import { prefectures } from "../../../backend/app/services/logic/prefectures.ts";
 import SelectTypeMenu from "../components/SelectTypeMenu.tsx";
 import NumberInputTypeMenu from "../components/NumberInputTypeMenu.tsx";
 import { serverUrl } from "../local.env.ts";

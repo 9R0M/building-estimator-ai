@@ -19,7 +19,7 @@ geopandas
 shapely
 fiona
 pyproj
-gdal==3.6.2
+gdal==3.4.*
 # === 機械学習 / データ処理 ===
 xgboost
 scikit-learn
