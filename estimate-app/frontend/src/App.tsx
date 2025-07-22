@@ -2,35 +2,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import EstimatePage from "./pages/AllInOneEstimatePage";
 
-type LineItem = { //fix
-  description: string;
-  quantity: number;
-  unitPrice: number;
-};
-
-// ネストされた JSON 構造の型定義
-type BuildingInfo = {
-  structure: string;
-  usage: string;
-  floors: number;
-  building_age: number;
-  area: number;
-};
-type LocationInfo = {
-  lat: number;
-  lon: number;
-  pref_code: string;
-};
-type EstimataRequest = { //fix
-  building: BuildingInfo;
-  location: LocationInfo;
-};
-
-type EstimateState = //fix
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "success"; estimate: number }
-  | { status: "error"; message: string };
 
 export default function App() {
   return (
