@@ -7,7 +7,7 @@ firebase-admin
 # === Supabase 連携（PostgRESTベースAPI用）===
 httpx  # 非同期API通信に使える軽量HTTPクライアント
 #supabase  
-git+https://github.com/supabase-community/supabase-py.git@v1.0.3
+https://github.com/supabase-community/supabase-py/archive/refs/tags/v1.0.3.zip
 # === 画像処理 / OCR ===
 opencv-python-headless
 pytesseract

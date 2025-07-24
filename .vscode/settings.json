@@ -1,11 +1,11 @@
+//.vscode\settings.json
 {
-  // Python用設定
   "python.analysis.typeCheckingMode": "basic",
   "python.envFile": "${workspaceFolder}/.env",
   "python.analysis.extraPaths": [
-    "backend/app",
-    "backend/app/backend/app/services",
-    "backend/app/backend/app/routers"
+    "estimate-app/backend/app",
+    "estimate-app/backend/app/services",
+    "estimate-app/backend/app/routers"
   ],
   "python.languageServer": "Pylance",
   "[yml][github-actions-workflow]": {
@@ -14,5 +14,8 @@
     "editor.tabSize": 2,
     "editor.autoIndent": "advanced",
     "editor.formatOnSave": true
+  },
+  "terminal.integrated.env.windows": {
+    "PYTHONPATH": "${workspaceFolder}/estimate-app/backend/app"
   }
-}
+ }

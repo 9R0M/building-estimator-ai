@@ -5,13 +5,9 @@ from app.models import (
    EstimateResponse,
    EstimateRequest
 )
-from fastapi import FastAPI
-app=FastAPI()
-@app.get("/")
-def read_root():
-    return{"msg":"Hello from Doccker!"}
+
 from app.services.logic.estimate_logic import estimate_cost
-from app.services.logic.land_price_models import load_land_price_data
+from app.services.logic.land_price_models import load_land_price_data, load_old_land_price_data
 from geopy.distance import geodesic
 from app.routers import register_routers
 import logging
