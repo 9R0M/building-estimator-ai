@@ -1,5 +1,6 @@
 FROM python:3.11-slim
 # --- 環境変数 ---
+ENV PYTHONPATH=/app
 ENV PROMETHEUS_MULTIPROC_DIR=/app/metrics
 # --- 作業ディレクトリ & ボリューム ---
 WORKDIR /app

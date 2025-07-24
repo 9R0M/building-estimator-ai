@@ -3,9 +3,8 @@ from fastapi import APIRouter, HTTPException
 import logging
 from geopy.distance import geodesic
 from app.models.estimate_models import EstimateRequest, EstimateResponse
-from app.services.logic.land_price_models import load_land_price_data
+from app.services.logic.land_price_models import load_land_price_data, load_old_land_price_data
 from app.services.logic.estimate_logic import estimate_cost
-from app.services.logic.land_price_models import load_land_price_data
 router = APIRouter(prefix="/estimate", tags=["estimate"])
 logger = logging.getLogger("estimate")
 @router.post("/", response_model=EstimateResponse)

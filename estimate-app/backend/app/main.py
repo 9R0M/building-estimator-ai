@@ -7,7 +7,7 @@ from app.models import (
 )
 
 from app.services.logic.estimate_logic import estimate_cost
-from app.services.logic.land_price_models import load_land_price_data
+from app.services.logic.land_price_models import load_land_price_data, load_old_land_price_data
 from geopy.distance import geodesic
 from app.routers import register_routers
 import logging

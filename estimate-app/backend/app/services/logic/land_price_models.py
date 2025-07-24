@@ -1,15 +1,37 @@
 from fastapi import APIRouter, HTTPException, Query
 from geopy.distance import geodesic
 import logging
+import os
+import geopandas as gpd
 from app.models.estimate_models import LandPriceDTO
-from app.services.logic.land_price_models import load_land_price_data, load_old_land_price_data
+
 router = APIRouter(prefix="/land-price", tags=["land-price"])
 logger = logging.getLogger(__name__)
+# ---------- データパス設定 ----------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.normpath(os.path.join(BASE_DIR, "../../../data/land_price"))
+# ---------- 地価データ読込関数（直接定義） ----------
+def load_land_price_data(pref_code: str) -> gpd.GeoDataFrame:
+   filename = f"{pref_code}_landprice.parquet"
+   path = os.path.join(DATA_DIR, filename)
+   if not os.path.exists(path):
+       logger.warning(f"地価ファイルが見つかりません: {path}")
+       raise FileNotFoundError(path)
+   return gpd.read_parquet(path)
+def load_old_land_price_data(pref_code: str) -> gpd.GeoDataFrame:
+   filename = f"{pref_code}_landprice_old.geojson"
+   path = os.path.join(DATA_DIR, filename)
+   if not os.path.exists(path):
+       logger.warning(f"旧地価ファイルが見つかりません: {path}")
+       raise FileNotFoundError(path)
+   return gpd.read_file(path)
+# ---------- 安全キャスト ----------
 def _safe_cast(value, default, cast):
    try:
        return cast(value) if value is not None else default
    except (ValueError, TypeError):
        return default
+# ---------- エンドポイント ----------
 @router.get("/", response_model=LandPriceDTO, summary="最寄り地価取得（現行＋旧年度対応）")
 async def get_land_price(
    lat: float = Query(..., description="緯度（例: 35.66）"),
@@ -20,13 +42,13 @@ async def get_land_price(
    source = "current"
    # --- ① 現行データ読み込み ---
    try:
-       gdf = load_land_price_data(pref_code) #FIX
+       gdf = load_land_price_data(pref_code)
        if gdf.empty:
            raise FileNotFoundError("現行データなし")
    except FileNotFoundError:
        logger.warning("現行データなし → 過去年度データへフォールバック")
        try:
-           gdf = load_old_land_price_data(pref_code) #FIX
+           gdf = load_old_land_price_data(pref_code)
            if gdf.empty:
                raise FileNotFoundError("旧年度データなし")
            source = "old"
