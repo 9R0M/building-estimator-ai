@@ -41,8 +41,8 @@ jobs:
      - name: Set up SSH key
        run: |
          mkdir -p ~/.ssh
-         echo "${{ secrets.VPS_KEY_BASE64 }}" | base64 -d > ~/.ssh/id_ed25519
-         chmod 600 ~/.ssh/id_ed25519
+         echo "${{ secrets.VPS_KEY_BASE64 }}" | base64 -d > ~/.ssh/id_rsa
+         chmod 600 ~/.ssh/id_rsa
          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
      - name: Set up Node.js
        uses: actions/setup-node@v3
@@ -58,7 +58,7 @@ jobs:
        with:
          host: ${{ secrets.VPS_HOST }}
          username: ${{ secrets.VPS_USER }}
-         key: ${{ secrets.VPS_KEY_BASE64 }} # 実際には使われないが、必須入力のためdummy的に
+         key: ${{ secrets.VPS_KEY_BASE64 }} # ※使用はされないが必須入力のため
          source: "estimate-app/frontend/dist/*"
          target: "/home/${{ secrets.VPS_USER }}/frontend-dist"
      - name: SSH into VPS and deploy
