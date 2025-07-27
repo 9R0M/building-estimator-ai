@@ -61,6 +61,11 @@ jobs:
          key: ${{ secrets.VPS_KEY }}
          source: "estimate-app/frontend/dist/*"
          target: "/home/${{ secrets.VPS_USER }}/frontend-dist"
+
+     - name: Upload .env to VPS
+       run: |
+        echo "${{ secrets.BACKEND_ENV }}" | ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+        "cat > /home/${{ secrets.VPS_USER }}/building-estimator-ai/estimate-app/backend/.env"
      - name: SSH into VPS and deploy
        run: |
          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
