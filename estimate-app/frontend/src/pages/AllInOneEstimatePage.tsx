@@ -6,11 +6,10 @@ import "react-toastify/dist/ReactToastify.css";
 import styles from "../styles/AllInOneEstimatePage.module.css";
 import UploadSection from "../components/UploadSection";
 import { useItems } from "../hooks/useItemsReducer";
-import { prefectures } from "../../../backend/app/services/logic/prefectures.ts";
-import SelectTypeMenu from "../components/SelectTypeMenu.tsx";
-import NumberInputTypeMenu from "../components/NumberInputTypeMenu.tsx";
-import { serverUrl } from "../local.env.ts";
-
+import { prefectures, type Prefecture } from "../utils/prefectures";
+import SelectTypeMenu from "../components/SelectTypeMenu";
+import NumberInputTypeMenu from "../components/NumberInputTypeMenu";
+import { serverUrl } from "../local.env";
 type FileWithPreview = File & { preview: string };
 type EstimateResponse = { estimated_cost: number | null };
 type LandPriceResponse = { land_price: number | null };
@@ -34,13 +33,11 @@ const AllInOneEstimatePage: React.FC = () => {
     const [yearOfConstruction, setYearOfConstruction] = useState(0);
     const [area, setArea] = useState(0);
     const [usage, setUsage] = useState("ビル");
-
     const structures = [
         { label: "RC", value: "RC" },
         { label: "SRC", value: "SRC" },
         { label: "S", value: "S" }
     ];
-
     const usages = [
         { label: "ビル", value: "ビル" },
         { label: "住宅", value: "住宅" },
@@ -51,34 +48,22 @@ const AllInOneEstimatePage: React.FC = () => {
         { label: "病院", value: "病院" },
         { label: "その他", value: "その他" }
     ];
-
     const totalItemsCost = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
     const total = totalItemsCost + (landPrice ?? 0);
-
     const validatePref = (_v: string): boolean => {
-        // 都道府県の選択は任意とするが、地価取得時だけ確認したい場合：
         return true;
     };
     const historyBuffer = {
         add: (record: any) => {
-            // ここでは localStorage を利用
-            // 必ず文字列化（JSON.stringify）して保存する必要があります
             localStorage.setItem("lastEstimate", JSON.stringify(record));
         }
     };
-
     const wrapperSetFiles = (updater: (prev: FileWithPreview[]) => FileWithPreview[]) => {
         setFiles(updater);
     };
-
-
     useEffect(() => {
-        // 一回限りの SUBMIT トリガー処理
         if (lastAction === "SUBMIT") {
-            // ① 履歴を IndexedDB/LocalStorage に追加（擬似コード）
             historyBuffer.add({ timestamp: Date.now(), items });
-
-            // ② 継続学習用AIに Experience Replay を送信
             axios
                 .post(
                     serverUrl + "/api/add_sample_batch",
@@ -91,8 +76,6 @@ const AllInOneEstimatePage: React.FC = () => {
                     { headers: { "x-api-version": "2" } }
                 )
                 .catch(_err => toast.error("学習データ送信に失敗しました"));
-
-            // ✅ 一回限りにするためトリガーをリセット
             setLastAction(null);
         }
     }, [lastAction, items]);
@@ -136,16 +119,12 @@ const AllInOneEstimatePage: React.FC = () => {
             if (!axios.isCancel(e)) toast.error(`OCRエラー: ${e.message}`);
         }
     };
-    //const estimateCtrl = useRef<AbortController | null>(null);
-
     const handleEstimate = async () => {
-        // 地価取得は必須でも、見積もり実行は任意にする
         if (!isValid()) {
             toast.error("明細情報が正しく入力されていません");
             return;
         }
         setLoading(true);
-
         const form = new FormData();
         files.forEach(f => form.append("files", f));
         form.append(
@@ -154,12 +133,9 @@ const AllInOneEstimatePage: React.FC = () => {
                 type: "application/json",
             })
         );
-
         try {
             const r = await axios.post<EstimateResponse>(serverUrl + "/api/auto-estimate", form);
             setEstimate(r.data.estimated_cost);
-
-            // ✅ 成功したら SUBMIT を dispatchしてトリガーにセット
             dispatch({ type: "SUBMIT" });
             setLastAction("SUBMIT");
             toast.success("見積完了");
@@ -169,16 +145,12 @@ const AllInOneEstimatePage: React.FC = () => {
             setLoading(false);
         }
     };
-
     const downloadPDF = () => estimate != null && window.open(`/auto-estimate/${estimate}/history.pdf`);
     const downloadExcel = () => estimate != null && window.open(`/auto-estimate/${estimate}/history.xlsx`);
     return (
         <div className={styles.container} role="main">
             <ToastContainer position="bottom-right" autoClose={3000} />
-
             <h1>見積システム</h1>
-
-            {/* 地価取得セクション */}
             <section className={styles.section} aria-labelledby="land-price">
                 <h2 id="land-price">地価取得</h2>
                 <form onSubmit={e => { e.preventDefault(); handleLandPriceFetch(); }}>
@@ -188,11 +160,12 @@ const AllInOneEstimatePage: React.FC = () => {
                             id="pref-select"
                             value={prefCode}
                             onChange={e => setPrefCode(e.target.value)}
-
                         >
                             <option value="">選択してください</option>
-                            {prefectures.map(p => (
-                                <option key={p.code} value={p.code}>{p.name}</option>
+                            {prefectures.map((p: Prefecture) => (
+                                <option key={p.code} value={p.code}>
+                                    {p.label}
+                                </option>
                             ))}
                         </select>
                         {errorPref && (
@@ -209,45 +182,28 @@ const AllInOneEstimatePage: React.FC = () => {
                     <p>地価：<strong>{landPrice.toLocaleString()} 円/㎡</strong></p>
                 )}
             </section>
-
             <SelectTypeMenu label="構造" selectList={structures} value={structure} onChange={setStructure} />
             <NumberInputTypeMenu label="階数" state={floors} setState={setFloors} />
             <NumberInputTypeMenu label="築年数" state={yearOfConstruction} setState={setYearOfConstruction} />
             <NumberInputTypeMenu label="面積" state={area} setState={setArea} />
             <SelectTypeMenu label="用途" selectList={usages} value={usage} onChange={setUsage} />
-            {/* 図面＆OCRセクション */}
             <section className={styles.section} aria-labelledby="ocr-section">
                 <h2 id="ocr-section">図面 &amp; OCR（任意・最大{MAX_FILES}枚）</h2>
                 <UploadSection files={files} setFiles={wrapperSetFiles} />
-
-                <button
-                    type="button"
-                    onClick={handleOcrUpload}
-                    disabled={files.length === 0}
-                >
+                <button type="button" onClick={handleOcrUpload} disabled={files.length === 0}>
                     OCR解析
                 </button>
                 {ocrText && (
-                    <pre
-                        className={styles.ocrText}
-                        aria-live="polite"
-                        aria-atomic="true"
-                    >
+                    <pre className={styles.ocrText} aria-live="polite" aria-atomic="true">
                         {ocrText}
                     </pre>
                 )}
             </section>
-
-            {/* 明細入力セクション */}
             <section className={styles.section} aria-labelledby="items-section">
                 <h2 id="items-section">明細入力</h2>
                 <form onSubmit={e => e.preventDefault()}>
                     {items.map((it, i) => (
-                        <fieldset
-                            key={i}
-                            className={styles.itemRow}
-                            aria-labelledby={`item-${i}-legend`}
-                        >
+                        <fieldset key={i} className={styles.itemRow} aria-labelledby={`item-${i}-legend`}>
                             <legend id={`item-${i}-legend`}>項目 {i + 1}</legend>
                             <label>
                                 内容
@@ -291,8 +247,6 @@ const AllInOneEstimatePage: React.FC = () => {
                 </form>
                 <p>明細合計：<strong>{total.toLocaleString()}</strong> 円</p>
             </section>
-
-            {/* 見積り実行セクション */}
             <section className={styles.section} aria-labelledby="estimate-section">
                 <h2 id="estimate-section">見積結果</h2>
                 <p>小計：<strong>{total.toLocaleString()}</strong> 円</p>
@@ -300,19 +254,10 @@ const AllInOneEstimatePage: React.FC = () => {
                     {loading ? "実行中…" : "見積り実行"}
                 </button>
                 {estimate != null && (
-                    <div
-                        className={styles.result}
-                        role="region"
-                        aria-live="polite"
-                        aria-atomic="true"
-                    >
+                    <div className={styles.result} role="region" aria-live="polite" aria-atomic="true">
                         <p>合計：<strong>{estimate.toLocaleString()} 円</strong></p>
-                        <button type="button" onClick={downloadPDF}>
-                            PDFダウンロード
-                        </button>
-                        <button type="button" onClick={downloadExcel}>
-                            Excelダウンロード
-                        </button>
+                        <button type="button" onClick={downloadPDF}>PDFダウンロード</button>
+                        <button type="button" onClick={downloadExcel}>Excelダウンロード</button>
                     </div>
                 )}
             </section>
