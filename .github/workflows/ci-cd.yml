@@ -64,8 +64,18 @@ jobs:
      - name: SSH into VPS and deploy
        run: |
          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-           cd /home/${{ secrets.VPS_USER }}/building-estimator-ai
+           cd /home/${{ secrets.VPS_USER }}
+           if [ ! -d "building-estimator-ai/.git" ]; then
+            echo "Cloning repository"
+            git clone git@github.com:9R0M/building-estimator-ai.git
+           else
+            echo "Repository already cloned"
+           fi
+           cd building-estimator-ai
+
+           git reset --hard
            git pull origin main
+
            docker compose down
            docker compose pull
            docker compose up -d
