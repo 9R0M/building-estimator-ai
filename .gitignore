@@ -130,6 +130,9 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+git add estimate-app/backend/.env
+git commit -m "Add backend .env"
+git push origin main
 
 # Spyder project settings
 .spyderproject
