@@ -32,6 +32,15 @@ jobs:
          cache-to: type=gha,mode=max
      - name: Set IMAGE env
        run: echo "IMAGE=qurom/building-estimator-ai:${{ github.sha }}" >> $GITHUB_ENV
+     - name: Set up Node.js
+       uses: actions/setup-node@v3
+       with:
+         node-version: '18'
+     - name: Install dependencies and build frontend
+       run: |
+         cd estimate-app/frontend
+         npm ci
+         npm run build
  deploy:
    needs: build-and-push
    runs-on: ubuntu-latest
@@ -44,15 +53,7 @@ jobs:
          echo "${{ secrets.VPS_KEY }}" > ~/.ssh/id_rsa
          chmod 600 ~/.ssh/id_rsa
          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-     - name: Set up Node.js
-       uses: actions/setup-node@v3
-       with:
-         node-version: '18'
-     - name: Install dependencies and build frontend
-       run: |
-         cd estimate-app/frontend
-         npm ci
-         npm run build
+
      - name: Upload dist/ to VPS via SCP
        uses: appleboy/scp-action@v0.1.3
        with:

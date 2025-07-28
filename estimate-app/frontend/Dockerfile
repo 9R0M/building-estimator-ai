@@ -6,8 +6,7 @@
     COPY package*.json ./
     RUN npm install
     # 全ファイルコピーしてビルド
-    COPY . .
-    RUN npm run build
+    COPY ./dist .
     # --- 実行ステージ ---
     FROM nginx:alpine
     # ビルド成果物をNginx公開ディレクトリに配置
