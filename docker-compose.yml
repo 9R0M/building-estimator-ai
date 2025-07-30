@@ -1,27 +1,19 @@
 version: '3.9'
 services:
  backend:
-   build:
-     context: ./estimate-app/backend
-     dockerfile: Dockerfile
+   image: qurom/building-estimator-ai:latest
    container_name: estimator-backend
    ports:
      - "8000:8000"
-   volumes:
-     - ./estimate-app/backend:/app
    env_file:
      - ./estimate-app/backend/.env  # ←必要に応じて調整
    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
    restart: always
  frontend:
-   build:
-     context: ./estimate-app/frontend
-     dockerfile: Dockerfile
+   image: qurom/building-estimator-frontend:latest
    container_name: estimator-frontend
    ports:
-     - "3000:3000"
-   volumes:
-     - ./estimate-app/frontend:/app
+     - "3000:80"
    stdin_open: true
    tty: true
    restart: always

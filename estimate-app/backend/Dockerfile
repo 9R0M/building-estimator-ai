@@ -44,7 +44,7 @@ RUN pip install --upgrade pip && \
    pip install gunicorn && \
    pip install "uvicorn[standard]"
 # --- アプリケーションコードをコピー ---
-COPY . .
+COPY ./app .
 # --- 非rootユーザーで起動（セキュリティ強化）---
 RUN addgroup --system app && adduser --system --ingroup app app
 USER app

@@ -1,8 +1,10 @@
-'''marmeid
+# mermaid
+
+:::mermaid
 classDiagram
- FEPage -->|Imports| UploadSection
- FEPage -->|Imports| useItems
- FEPage -->|Axios POST| routers.estimate
+ %%FEPage -->|Imports| UploadSection
+ %%FEPage -->|Imports| useItems
+ %%FEPage -->|Axios POST| routers.estimate
  routers.estimate ..> services.ocr_processor : 「OCR」  
  routers.estimate ..> services.ai.structure_ai : 「構造解析」  
  routers.estimate ..> services.logic.land_price_service : 「地価検索」  
@@ -26,4 +28,4 @@ classDiagram
  class services.logic.estimate_logic {
    +estimate(items, area, structure, land_price): int
  }
- '''
+:::
