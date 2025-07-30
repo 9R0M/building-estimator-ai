@@ -77,7 +77,7 @@ jobs:
      - name: Upload .env to VPS
        run: |
         echo "${{ secrets.BACKEND_ENV }}" | ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
-        "cat > /home/${{ secrets.VPS_USER }}/building-estimator-ai/estimate-app/backend/.env"
+        "cat > /home/${{ secrets.VPS_USER }}/estimate-app/backend/.env"
      - name: SSH into VPS and deploy
        run: |
          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
