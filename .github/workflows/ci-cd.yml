@@ -74,10 +74,10 @@ jobs:
     #      source: docker-compose.yml
     #      target: "/home/${{ secrets.VPS_USER }}/"
 
-     - name: Upload .env to VPS
-       run: |
-        echo "${{ secrets.BACKEND_ENV }}" | tr -d '\r' | \
-        ssh root@160.251.185.191 "cat > /home/${{ secrets.VPS_USER }}/building-estimator-ai/estimate-app/backend/.env"
+    #  - name: Upload .env to VPS
+    #    run: |
+    #     echo "${{ secrets.BACKEND_ENV }}" | tr -d '\r' | \
+    #     ssh root@160.251.185.191 "cat > /home/${{ secrets.VPS_USER }}/building-estimator-ai/estimate-app/backend/.env"
      - name: SSH into VPS and deploy
        run: |
          ssh -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
