@@ -32,15 +32,15 @@ jobs:
          cache-to: type=gha,mode=max
      - name: Set IMAGE env
        run: echo "IMAGE=qurom/building-estimator-ai:${{ github.sha }}" >> $GITHUB_ENV
-     - name: Set up Node.js
-       uses: actions/setup-node@v3
-       with:
-         node-version: '18'
-     - name: Install dependencies and build frontend
-       run: |
-         cd estimate-app/frontend
-         npm ci
-         npm run build
+    #  - name: Set up Node.js
+    #    uses: actions/setup-node@v3
+    #    with:
+    #      node-version: '18'
+    #  - name: Install dependencies and build frontend
+    #    run: |
+    #      cd estimate-app/frontend
+    #      npm ci
+    #      npm run build
      - name: Build & Push Frontend Image
        uses: docker/build-push-action@v6
        with:
