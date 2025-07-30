@@ -1,6 +1,6 @@
 # frontend/Dockerfile
 # --- 実行ステージ（Nginx） ---
-    FROM nginx:alpine
+    FROM nginx:alpine AS builder
     
     # ビルド成果物を Nginx の公開ディレクトリに配置
     COPY --from=builder ./frontend/dist/ /usr/share/nginx/html
