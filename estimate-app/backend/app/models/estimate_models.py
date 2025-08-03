@@ -10,8 +10,8 @@ class EstimateRequest(BaseModel):
     floors: int
     usage: str
     building_age: int
-    lat: float
-    lon: float
+    lat: float | None
+    lon: float | None
     pref_code: str
 
 
@@ -20,3 +20,15 @@ class EstimateResponse(BaseModel):
     breakdown: Dict[str, float]
     land_price: Optional[LandPriceDTO] = None
     # app/models/estimate_models.py
+
+class LandPriceDTO(BaseModel):
+    location: str
+    use: str
+    structure: Optional[str] = None
+    price: float
+    base_price: Optional[float] = None
+    factor: Optional[float] = None
+    year: Optional[int] = None
+    distance_m: Optional[float] = None
+    source: Optional[str] = None
+    total_price: Optional[float] = None

@@ -2,7 +2,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 import pytesseract, cv2, numpy as np, re
 
 from app.models.estimate_models import EstimateRequest
-router = APIRouter(prefix="/extract", tags=["extract"])
+router = APIRouter(prefix="/api/extract", tags=["extract"])
 @router.post("/", response_model=EstimateRequest, summary="OCRで建物情報を抽出")
 async def extract_info(file: UploadFile = File(...)):
    contents = await file.read()

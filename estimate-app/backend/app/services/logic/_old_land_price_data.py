@@ -25,7 +25,7 @@ def load_geo_dataframe(path: str) -> gpd.GeoDataFrame:
    except Exception:
        logger.exception(f"[load] GeoDataFrame 読込エラー: {path}")
        raise
-def load_land_price_data(pref_code: str) -> gpd.GeoDataFrame:
+def load_current_land_price_data(pref_code: str) -> gpd.GeoDataFrame:
    # 現行データ（parquet優先）()
    for ext in (".parquet", ".geojson"):
        path = os.path.join(DATA_DIR, f"{pref_code}_current{ext}")
@@ -34,6 +34,7 @@ def load_land_price_data(pref_code: str) -> gpd.GeoDataFrame:
        except FileNotFoundError:
            continue
    raise FileNotFoundError(f"現行地価データ未検出: {pref_code}_current.[parquet|geojson]")
+
 def load_old_land_price_data(pref_code: str) -> gpd.GeoDataFrame:
    # 過去データ対応、parquet優先、学習AI用に長期履歴を蓄積
    for ext in (".parquet", ".geojson"):

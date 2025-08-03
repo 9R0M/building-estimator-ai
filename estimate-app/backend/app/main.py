@@ -5,20 +5,20 @@ from app.models import (
    EstimateResponse,
    EstimateRequest
 )
+app = FastAPI()
+from app.routers.land_price import router as land_price_router
+app.include_router(land_price_router)
 
 from app.services.logic.estimate_logic import estimate_cost
-from app.services.logic.land_price_models import load_land_price_data, load_old_land_price_data
+from app.services.logic.land_price_models import load_land_price_data
 from geopy.distance import geodesic
 from app.routers import register_routers
 import logging
 app = FastAPI(
-
     title="建物見積もりAI API",
-
     description="地価データと建物構造情報から自動見積もりを行うAPI群",
-
-    version="1.0.0"
-
+    version="1.0.0",
+    redirect_slashes=False
 )
 
 # CORS ミドルウェア設定
@@ -37,6 +37,12 @@ app.add_middleware(
 
 # ルーター登録
 register_routers(app)
+from app.services.logic.land_price_models import router as land_price_router
+app.include_router(land_price_router)
+
+app = FastAPI(redirect_slashes=False)
+
+
 logger = logging.getLogger("estimate_with_location")
 
 @app.post("/estimate-with-location", response_model=EstimateResponse, summary="ネストされた building/location を受け取り見積もりを返す")
