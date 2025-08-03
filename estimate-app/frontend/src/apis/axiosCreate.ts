@@ -1,8 +1,7 @@
 //estimate-app\frontend\src\apis\axiosCreate.ts
 import axios from "axios";
-import { serverUrl } from "../local.env";
 export const axoisApi = axios.create({
- baseURL: serverUrl,
+ baseURL: import.meta.env.VITE_SERVER_URL,
  headers: {
    "Content-Type": "application/json"
 
