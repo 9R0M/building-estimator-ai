@@ -9,13 +9,12 @@ import { useItems } from "../hooks/useItemsReducer";
 import { prefectures, type Prefecture } from "../utils/prefectures";
 import SelectTypeMenu from "../components/SelectTypeMenu";
 import NumberInputTypeMenu from "../components/NumberInputTypeMenu";
-import { serverUrl } from "../local.env";
+import type { LandPriceResponse, EstimateResponse, OcrResponse } from "../types/api";
+//import { serverUrl } from "../local.env";
 type FileWithPreview = File & { preview: string };
-type EstimateResponse = { estimated_cost: number | null };
-type LandPriceResponse = { land_price: number | null };
-type OcrResponse = { text: string };
 
 const MAX_FILES = 10;
+const serverUrl = import.meta.env.VITE_SERVER_URL;
 
 const AllInOneEstimatePage: React.FC = () => {
     const [prefCode, setPrefCode] = useState("");
@@ -89,16 +88,17 @@ const AllInOneEstimatePage: React.FC = () => {
         landPriceCtrl.current = ctrl;
         try {
             const r = await axios.post<LandPriceResponse>(
-                serverUrl + "/api/land-price",
-                { pref_code: prefCode },
+                `${serverUrl}/api/land-price/`,
+                { pref_code: prefCode }, // ✅ POSTボディ
                 { signal: ctrl.signal }
-            );
+              );
             setLandPrice(r.data.land_price);
             r.data.land_price == null
                 ? toast.error("地価が取得できませんでした")
                 : toast.success("地価を取得しました");
         } catch (e: any) {
             if (!axios.isCancel(e)) toast.error(`地価取得エラー: ${e.message}`);
+            console.log(e);
         } finally {
             setLandPriceLoading(false);
         }
@@ -112,7 +112,7 @@ const AllInOneEstimatePage: React.FC = () => {
         files.forEach(f => form.append("files", f));
         toast.info("OCR解析中…");
         try {
-            const r = await axios.post<OcrResponse>(serverUrl + "/extract-info", form, { signal: ctrl.signal });
+            const r = await axios.post<OcrResponse>(`${serverUrl}/api/extract-info`, form, { signal: ctrl.signal });
             setOcrText(r.data.text);
             toast.success("OCR解析完了");
         } catch (e: any) {
@@ -127,24 +127,39 @@ const AllInOneEstimatePage: React.FC = () => {
         setLoading(true);
         const form = new FormData();
         files.forEach(f => form.append("files", f));
-        form.append(
+        const req = {
+            structure: structure,
+            area: area,
+            floors: floors,
+            usage: usage,
+            building_age: yearOfConstruction,
+            lat: null,
+            lon: null,
+            pref_code: prefCode,
+        };
+        form.append( //使ってない
             "payload",
-            new Blob([JSON.stringify({ pref_code: prefCode, items })], {
+            new Blob([JSON.stringify(req/*, items }*/)], {
                 type: "application/json",
             })
         );
+        
         try {
-            const r = await axios.post<EstimateResponse>(serverUrl + "/api/auto-estimate", form);
-            setEstimate(r.data.estimated_cost);
+            const ctrl = new AbortController();
+            const r = await axios.post<EstimateResponse>(
+              `${serverUrl}/estimate-with-location`,
+              { /* リクエストボディ */ },
+              { signal: ctrl.signal }
+            );
+            const cost = r.data.estimated_cost;
+            setEstimate(cost);
             dispatch({ type: "SUBMIT" });
             setLastAction("SUBMIT");
             toast.success("見積完了");
-        } catch (e: any) {
+          } catch (e: any) {
             toast.error("見積りに失敗しました: " + e.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+          }
+        };
     const downloadPDF = () => estimate != null && window.open(`/auto-estimate/${estimate}/history.pdf`);
     const downloadExcel = () => estimate != null && window.open(`/auto-estimate/${estimate}/history.xlsx`);
     return (
@@ -152,8 +167,8 @@ const AllInOneEstimatePage: React.FC = () => {
             <ToastContainer position="bottom-right" autoClose={3000} />
             <h1>見積システム</h1>
             <section className={styles.section} aria-labelledby="land-price">
-                <h2 id="land-price">地価取得</h2>
-                <form onSubmit={e => { e.preventDefault(); handleLandPriceFetch(); }}>
+                <h2 id="land-price">地価取得</h2> 
+                <form onSubmit={e => { e.preventDefault(); handleLandPriceFetch(); }}> {/* */}
                     <div className={styles.formGroup}>
                         <label htmlFor="pref-select">都道府県を選択（必須）</label>
                         <select

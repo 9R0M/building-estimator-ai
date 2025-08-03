@@ -1,13 +1,17 @@
 #routers/estimate.py
 from fastapi import APIRouter, HTTPException
+from logging import DEBUG,Formatter, BASIC_FORMAT, FileHandler, Logger, lastResort
 import logging
 from geopy.distance import geodesic
 from app.models.estimate_models import EstimateRequest, EstimateResponse
-from app.services.logic.land_price_models import load_land_price_data, load_old_land_price_data
+from app.services.logic.land_price_models import load_land_price_data
 from app.services.logic.estimate_logic import estimate_cost
-router = APIRouter(prefix="/estimate", tags=["estimate"])
+router = APIRouter(prefix="/api/estimate", tags=["estimate"])
 logger = logging.getLogger("estimate")
-@router.post("/", response_model=EstimateResponse)
+logger.setLevel(DEBUG)
+if lastResort:
+    lastResort.setLevel(DEBUG)
+    lastResort.setFormatter(Formatter(BASIC_FORMAT))  
 @router.post("/", response_model=EstimateResponse)
 async def perform_estimate(req: EstimateRequest):  # タイポ修正
     logger.info(f"Request: {req.model_dump_json()}")  # 非推奨メソッド修正
