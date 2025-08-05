@@ -25,6 +25,8 @@ app = FastAPI(
 origins = [
    "http://localhost:5173",  # フロントのURL（開発環境の例）
    "http://127.0.0.1:5173",
+   "http://rakumitsu.com",
+   "https://rakumitsu.com",
 ]
 app.add_middleware(
    CORSMiddleware,
@@ -37,8 +39,6 @@ app.add_middleware(
 
 # ルーター登録
 register_routers(app)
-from app.services.logic.land_price_models import router as land_price_router
-app.include_router(land_price_router)
 
 app = FastAPI(redirect_slashes=False)
 
