@@ -16,6 +16,7 @@ Pillow
 weasyprint
 # === 地図 / 地価 / Geo対応 ===
 geopandas
+geopy
 shapely
 fiona
 pyproj
