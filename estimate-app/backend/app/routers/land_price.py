@@ -10,7 +10,7 @@ from app.models.estimate_models import LandPriceDTO
 from app.models.land_price_dto import LandPriceRequest
 
 # ---------- ルーター設定 ----------
-router = APIRouter(prefix="/api/land-price", tags=["land-price"])
+router = APIRouter(prefix="/api", tags=["land-price"])
 
 # ---------- ログ設定 ----------
 logger = logging.getLogger(__name__)
@@ -50,7 +50,7 @@ def load_split_land_price(pref_name: str) -> gpd.GeoDataFrame:
     return gpd.read_parquet(path)
 
 # ---------- 地価取得エンドポイント（POST） ----------
-@router.post("/", response_model=LandPriceDTO, summary="地価取得（split形式）")
+@router.post("/land-price", response_model=LandPriceDTO, summary="地価取得（split形式）")
 async def get_land_price(req: LandPriceRequest):
     logger.info(f"地価取得リクエスト: {req}")
 
