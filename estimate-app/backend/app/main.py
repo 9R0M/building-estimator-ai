@@ -45,6 +45,10 @@ app = FastAPI(redirect_slashes=False)
 
 logger = logging.getLogger("estimate_with_location")
 
+@app.get("/health")
+def health_check():
+   return {"status": "ok"}
+
 @app.post("/estimate-with-location", response_model=EstimateResponse, summary="ネストされた building/location を受け取り見積もりを返す")
 async def estimate_with_location(req: EstimateRequest):
    logger.info(f"リクエスト受信: {req.json()}")
