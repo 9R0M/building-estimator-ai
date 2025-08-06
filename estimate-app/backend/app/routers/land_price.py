@@ -5,16 +5,21 @@ from pydantic import BaseModel
 from typing import Optional
 import os
 import geopandas as gpd
+from logging import lastResort, DEBUG, Formatter, BASIC_FORMAT
 import logging
 from app.models.estimate_models import LandPriceDTO
 from app.models.land_price_dto import LandPriceRequest
 
 # ---------- ルーター設定 ----------
-router = APIRouter(prefix="/api", tags=["land-price"])
+router = APIRouter(prefix="/api/land-price", tags=["land-price"])
 
 # ---------- ログ設定 ----------
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+logger.setLevel(DEBUG)
+if lastResort:
+    lastResort.setLevel(DEBUG)
+    lastResort.setFormatter(Formatter(BASIC_FORMAT)) 
 
 # ---------- 都道府県コード → 名称マッピング ----------
 PREF_CODE_TO_NAME = {
@@ -50,7 +55,7 @@ def load_split_land_price(pref_name: str) -> gpd.GeoDataFrame:
     return gpd.read_parquet(path)
 
 # ---------- 地価取得エンドポイント（POST） ----------
-@router.post("/land-price", response_model=LandPriceDTO, summary="地価取得（split形式）")
+@router.post("/", response_model=LandPriceDTO, summary="地価取得（split形式）")
 async def get_land_price(req: LandPriceRequest):
     logger.info(f"地価取得リクエスト: {req}")
 
