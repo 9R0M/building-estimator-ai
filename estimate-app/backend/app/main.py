@@ -1,13 +1,11 @@
 # backend/app/main.py
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from logging import DEBUG,Formatter, BASIC_FORMAT, FileHandler, Logger, lastResort
 from app.models import (
    EstimateResponse,
    EstimateRequest
 )
-app = FastAPI()
-from app.routers.land_price import router as land_price_router
-app.include_router(land_price_router)
 
 from app.services.logic.estimate_logic import estimate_cost
 from app.services.logic.land_price_models import load_land_price_data
@@ -40,13 +38,15 @@ app.add_middleware(
 # ルーター登録
 register_routers(app)
 
-app = FastAPI(redirect_slashes=False)
-
-
 logger = logging.getLogger("estimate_with_location")
+logger.setLevel(DEBUG)
+if lastResort:
+    lastResort.setLevel(DEBUG)
+    lastResort.setFormatter(Formatter(BASIC_FORMAT)) 
 
 @app.get("/health")
 def health_check():
+   logger.info("ヘルスチェック")
    return {"status": "ok"}
 
 @app.post("/estimate-with-location", response_model=EstimateResponse, summary="ネストされた building/location を受け取り見積もりを返す")
