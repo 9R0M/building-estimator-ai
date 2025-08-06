@@ -92,10 +92,14 @@ const AllInOneEstimatePage: React.FC = () => {
                 { pref_code: prefCode }, // ✅ POSTボディ
                 { signal: ctrl.signal }
               );
-            setLandPrice(r.data.land_price);
-            r.data.land_price == null
-                ? toast.error("地価が取得できませんでした")
-                : toast.success("地価を取得しました");
+            console.log(r.data);
+            
+            if(r.data.base_price === null) {
+                toast.error("地価が取得できませんでした")
+            } else {
+                setLandPrice(r.data.base_price);
+                toast.success("地価を取得しました");
+            }
         } catch (e: any) {
             if (!axios.isCancel(e)) toast.error(`地価取得エラー: ${e.message}`);
             console.log(e);
@@ -120,10 +124,6 @@ const AllInOneEstimatePage: React.FC = () => {
         }
     };
     const handleEstimate = async () => {
-        if (!isValid()) {
-            toast.error("明細情報が正しく入力されていません");
-            return;
-        }
         setLoading(true);
         const form = new FormData();
         files.forEach(f => form.append("files", f));
@@ -133,8 +133,6 @@ const AllInOneEstimatePage: React.FC = () => {
             floors: floors,
             usage: usage,
             building_age: yearOfConstruction,
-            lat: null,
-            lon: null,
             pref_code: prefCode,
         };
         form.append( //使ってない
@@ -147,8 +145,8 @@ const AllInOneEstimatePage: React.FC = () => {
         try {
             const ctrl = new AbortController();
             const r = await axios.post<EstimateResponse>(
-              `${serverUrl}/estimate-with-location`,
-              { /* リクエストボディ */ },
+              `${serverUrl}/api/estimate/`,
+              { req },
               { signal: ctrl.signal }
             );
             const cost = r.data.estimated_cost;
@@ -159,6 +157,7 @@ const AllInOneEstimatePage: React.FC = () => {
           } catch (e: any) {
             toast.error("見積りに失敗しました: " + e.message);
           }
+          setLoading(false);
         };
     const downloadPDF = () => estimate != null && window.open(`/auto-estimate/${estimate}/history.pdf`);
     const downloadExcel = () => estimate != null && window.open(`/auto-estimate/${estimate}/history.xlsx`);

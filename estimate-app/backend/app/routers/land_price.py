@@ -67,10 +67,10 @@ async def get_land_price(req: LandPriceRequest):
     try:
         gdf = load_split_land_price(pref_name)
 
-        # if req.usage:
-        #     gdf = gdf[gdf["用途"] == req.usage]
-        # if req.structure:
-        #     gdf = gdf[gdf["構造"] == req.structure]
+        if req.usage:
+            gdf = gdf[gdf["用途"] == req.usage]
+        if req.structure:
+            gdf = gdf[gdf["構造"] == req.structure]
 
         if gdf.empty:
             raise HTTPException(status_code=404, detail="該当する地価データが見つかりません")
