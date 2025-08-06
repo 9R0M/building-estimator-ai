@@ -86,10 +86,11 @@ const AllInOneEstimatePage: React.FC = () => {
         landPriceCtrl.current?.abort();
         const ctrl = new AbortController();
         landPriceCtrl.current = ctrl;
+        const req = { pref_code: prefCode };
         try {
             const r = await axios.post<LandPriceResponse>(
                 `${serverUrl}/api/land-price/`,
-                { pref_code: prefCode }, // ✅ POSTボディ
+                req, // ✅ POSTボディ
                 { signal: ctrl.signal }
               );
             console.log(r.data);
@@ -144,9 +145,10 @@ const AllInOneEstimatePage: React.FC = () => {
         
         try {
             const ctrl = new AbortController();
+            console.log(req);
             const r = await axios.post<EstimateResponse>(
               `${serverUrl}/api/estimate/`,
-              { req },
+              req,
               { signal: ctrl.signal }
             );
             const cost = r.data.estimated_cost;
