@@ -12,7 +12,9 @@ export type LandPriceResponse = {
 };
 
 export type EstimateResponse = {
-  estimated_cost: number | null;
+  estimated_amount: number;
+  //breakdown: {str, float};
+  land_price: LandPriceResponse | null;
 };
 
 export type OcrResponse = {

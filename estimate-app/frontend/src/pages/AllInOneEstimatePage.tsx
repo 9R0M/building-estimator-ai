@@ -92,10 +92,10 @@ const AllInOneEstimatePage: React.FC = () => {
                 `${serverUrl}/api/land-price/`,
                 req, // ✅ POSTボディ
                 { signal: ctrl.signal }
-              );
+            );
             console.log(r.data);
-            
-            if(r.data.base_price === null) {
+
+            if (r.data.base_price === null) {
                 toast.error("地価が取得できませんでした")
             } else {
                 setLandPrice(r.data.base_price);
@@ -142,25 +142,26 @@ const AllInOneEstimatePage: React.FC = () => {
                 type: "application/json",
             })
         );
-        
+
         try {
             const ctrl = new AbortController();
-            console.log(req);
+            //console.log(req);
             const r = await axios.post<EstimateResponse>(
-              `${serverUrl}/api/estimate/`,
-              req,
-              { signal: ctrl.signal }
+                `${serverUrl}/api/estimate/`,
+                req,
+                { signal: ctrl.signal }
             );
-            const cost = r.data.estimated_cost;
+            const cost = r.data.estimated_amount;
             setEstimate(cost);
+            console.log(`estimate: ${estimate}`);
             dispatch({ type: "SUBMIT" });
             setLastAction("SUBMIT");
             toast.success("見積完了");
-          } catch (e: any) {
+        } catch (e: any) {
             toast.error("見積りに失敗しました: " + e.message);
-          }
-          setLoading(false);
-        };
+        }
+        setLoading(false);
+    };
     const downloadPDF = () => estimate != null && window.open(`/auto-estimate/${estimate}/history.pdf`);
     const downloadExcel = () => estimate != null && window.open(`/auto-estimate/${estimate}/history.xlsx`);
     return (
@@ -168,7 +169,7 @@ const AllInOneEstimatePage: React.FC = () => {
             <ToastContainer position="bottom-right" autoClose={3000} />
             <h1>見積システム</h1>
             <section className={styles.section} aria-labelledby="land-price">
-                <h2 id="land-price">地価取得</h2> 
+                <h2 id="land-price">地価取得</h2>
                 <form onSubmit={e => { e.preventDefault(); handleLandPriceFetch(); }}> {/* */}
                     <div className={styles.formGroup}>
                         <label htmlFor="pref-select">都道府県を選択（必須）</label>
