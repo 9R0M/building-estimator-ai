@@ -11,8 +11,8 @@ class LandPriceRequest(BaseModel):
         pattern=r"^\d{2}$",
         description="都道府県コード（2桁）"
     )
-    lat: float
-    lon: float    
+    #lat: float
+    #lon: float    
 
 
 class LandPriceDTO(BaseModel):
