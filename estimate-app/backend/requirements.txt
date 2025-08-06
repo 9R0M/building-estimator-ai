@@ -31,3 +31,7 @@ prometheus-fastapi-instrumentator
 # === その他ユーティリティ ===
 python-multipart
 python-dotenv
+
+# === はるにゃん追加 ===
+#TODO:分類して
+pyarrow
