@@ -10,8 +10,8 @@ class EstimateRequest(BaseModel):
     floors: int
     usage: str
     building_age: int
-    lat: float | None
-    lon: float | None
+    lat: Optional[float] = None
+    lon: Optional[float] = None
     pref_code: str
 
 

@@ -1,10 +1,6 @@
 /* src/styles/AllInOneEstimatePage.module.css */
 
 /* 全体ボディ背景 */
-body {
-  background-color: #fff;
-}
-
 .container {
   max-width: 800px;
   margin: 0 auto;

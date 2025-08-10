@@ -11,6 +11,9 @@ class LandPriceRequest(BaseModel):
         pattern=r"^\d{2}$",
         description="都道府県コード（2桁）"
     )
+    usage: Optional[str] = None
+    structure: Optional[str] = None
+    area: Optional[float] = None  #これを追加
     #lat: float
     #lon: float    
 

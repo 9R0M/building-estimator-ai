@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 # ---------- パス設定 ----------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-SPLIT_DIR = os.path.normpath(os.path.join(BASE_DIR, "script/data/land_price/split"))
+SPLIT_DIR = os.path.normpath(os.path.join(BASE_DIR, "../../script/data/land_price/split"))
 
 # ---------- 都道府県コード → 名称 ----------
 PREF_CODE_TO_NAME = {
