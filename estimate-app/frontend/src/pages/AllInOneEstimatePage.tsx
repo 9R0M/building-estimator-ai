@@ -155,8 +155,8 @@ const AllInOneEstimatePage: React.FC = () => {
             setEstimate(cost);
             console.log(`estimate: ${estimate}`);
             dispatch({ type: "SUBMIT" });
-            setLastAction("SUBMIT");
             toast.success("見積完了");
+            setLastAction("SUBMIT");
         } catch (e: any) {
             toast.error("見積りに失敗しました: " + e.message);
         }

@@ -4,6 +4,7 @@ from logging import DEBUG,Formatter, BASIC_FORMAT, FileHandler, Logger, lastReso
 import logging
 from geopy.distance import geodesic
 from app.models.estimate_models import EstimateRequest, EstimateResponse
+from app.routers.land_price import PREF_CODE_TO_NAME
 from app.services.logic.land_price_models import load_land_price_data
 from app.services.logic.estimate_logic import estimate_cost
 router = APIRouter(prefix="/api/estimate", tags=["estimate"])
@@ -26,6 +27,7 @@ async def perform_estimate(req: EstimateRequest):  # タイポ修正
         nearest = df.loc[df["distance"].idxmin()]  # 属性アクセス修正
     except Exception:
         raise HTTPException(status_code=500, detail="地価距離計算に失敗しました")   
-    region = str(nearest.get("L01_001") or "")
+    region = PREF_CODE_TO_NAME.get(req.pref_code) #str(nearest.get("L01_001") or "")
+    # logger.info(f"{region}")
     cost = estimate_cost(req.structure, req.area, req.usage, region, req.floors, req.building_age)   
     return EstimateResponse(estimated_amount=cost, breakdown={}, land_price=None)
