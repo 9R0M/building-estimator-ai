@@ -23,7 +23,7 @@ const AllInOneEstimatePage: React.FC = () => {
     const [errorPref] = useState("");
     const [loading, setLoading] = useState(false);
     const [files, setFiles] = useState<FileWithPreview[]>([]);
-    const { items, change, add, remove, isValid, dispatch } = useItems();
+    const { items, change, add, remove, /*isValid, */dispatch } = useItems();
     const [estimate, setEstimate] = useState<number | null>(null);
     const [lastAction, setLastAction] = useState<string | null>(null);
     const [ocrText, setOcrText] = useState("");
