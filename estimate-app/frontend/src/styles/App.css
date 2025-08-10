@@ -309,6 +309,7 @@ button::after {
 button:hover {
   transform: translateY(-1px);
   filter: saturate(1.05);
+  color: linear-gradient(180deg, var(--accent) 0%, var(--accent-2) 100%);
 
   box-shadow: 0 12px 28px rgba(52, 194, 255, .3), inset 0 1px 0 rgba(255, 255, 255, .75);
 
