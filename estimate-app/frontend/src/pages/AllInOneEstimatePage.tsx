@@ -1,5 +1,5 @@
 // src/pages/AllInOneEstimatePage.tsx
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, isValidElement } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -19,6 +19,7 @@ const serverUrl = import.meta.env.VITE_SERVER_URL;
 const AllInOneEstimatePage: React.FC = () => {
     const [prefCode, setPrefCode] = useState("");
     const [landPrice, setLandPrice] = useState<number | null>(null);
+    const [selectLandPrice, setSelectLandPrice] = useState(false);
     const [landPriceLoading, setLandPriceLoading] = useState(false);
     const [errorPref] = useState("");
     const [loading, setLoading] = useState(false);
@@ -179,7 +180,10 @@ const AllInOneEstimatePage: React.FC = () => {
                         <select
                             id="pref-select"
                             value={prefCode}
-                            onChange={e => setPrefCode(e.target.value)}
+                            onChange={e => {
+                                setPrefCode(e.target.value);
+                                setSelectLandPrice(validatePref(e.target.value))
+                            }}
                         >
                             <option value="">選択してください</option>
                             {prefectures.map((p: Prefecture) => (
@@ -194,7 +198,7 @@ const AllInOneEstimatePage: React.FC = () => {
                             </p>
                         )}
                     </div>
-                    <button type="submit" disabled={landPriceLoading}>
+                    <button type="submit" disabled={landPriceLoading || !selectLandPrice}>
                         {landPriceLoading ? "取得中…" : "地価取得"}
                     </button>
                 </form>
