@@ -49,7 +49,10 @@ const AllInOneEstimatePage: React.FC = () => {
     ];
     const totalItemsCost = items.reduce((sum, it) => sum + it.quantity * it.unitPrice, 0);
     const total = totalItemsCost + (landPrice ?? 0);
-    const validatePref = (_v: string): boolean => {
+    const validatePref = (v: string): boolean => {
+        if(v === "") {
+            return false;
+        }
         return true;
     };
     const historyBuffer = {
@@ -63,18 +66,18 @@ const AllInOneEstimatePage: React.FC = () => {
     useEffect(() => {
         if (lastAction === "SUBMIT") {
             historyBuffer.add({ timestamp: Date.now(), items });
-            axios
-                .post(
-                    serverUrl + "/api/add_sample_batch",
-                    {
-                        samples: items.map(it => ({
-                            features: { area: it.unitPrice, rooms: it.quantity },
-                            actual: it.quantity * it.unitPrice,
-                        })),
-                    },
-                    { headers: { "x-api-version": "2" } }
-                )
-                .catch(_err => toast.error("学習データ送信に失敗しました"));
+            // axios
+            //     .post(
+            //         serverUrl + "/api/add_sample_batch",
+            //         {
+            //             samples: items.map(it => ({
+            //                 features: { area: it.unitPrice, rooms: it.quantity },
+            //                 actual: it.quantity * it.unitPrice,
+            //             })),
+            //         },
+            //         { headers: { "x-api-version": "2" } }
+            //     )
+            //     .catch(_err => toast.error("学習データ送信に失敗しました"));
             setLastAction(null);
         }
     }, [lastAction, items]);
@@ -199,11 +202,72 @@ const AllInOneEstimatePage: React.FC = () => {
                     <p>地価：<strong>{landPrice.toLocaleString()} 円/㎡</strong></p>
                 )}
             </section>
-            <SelectTypeMenu label="構造" selectList={structures} value={structure} onChange={setStructure} />
-            <NumberInputTypeMenu label="階数" state={floors} setState={setFloors} />
-            <NumberInputTypeMenu label="築年数" state={yearOfConstruction} setState={setYearOfConstruction} />
-            <NumberInputTypeMenu label="面積" state={area} setState={setArea} />
-            <SelectTypeMenu label="用途" selectList={usages} value={usage} onChange={setUsage} />
+
+            {/* 構造 */}
+            <section className={styles.section} aria-labelledby="sec-structure">
+                <h2 id="sec-structure">構造</h2>
+                <div className={styles.formCard}>
+                    <div className={`${styles.fieldGrid} ${styles.grid2}`}>
+                        <div className={styles.fieldRow}>
+                            <label className={styles.fieldLabel} htmlFor="structure">構造種別</label>
+                            <SelectTypeMenu label="" selectList={structures} value={structure} onChange={setStructure} />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* 階層 */}
+            <section className={styles.section} aria-labelledby="sec-floors">
+                <h2 id="sec-floors">階層</h2>
+                <div className={styles.formCard}>
+                    <div className={`${styles.fieldGrid} ${styles.grid3}`}>
+                        <div className={styles.fieldRow}>
+                            <label className={styles.fieldLabel} htmlFor="floors">地上階</label>
+                            <NumberInputTypeMenu label="" state={floors} setState={setFloors} />
+                            {/*<div className={styles.fieldHelp}>51階以上は逓増係数で自動補正</div>*/}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* 築年数 */}
+            <section className={styles.section} aria-labelledby="sec-age">
+                <h2 id="sec-age">築年数</h2>
+                <div className={styles.formCard}>
+                    <div className={styles.fieldGrid}>
+                        <div className={styles.fieldRow}>
+                            <label className={styles.fieldLabel} htmlFor="building_age">築年数</label>
+                            <NumberInputTypeMenu label="" state={yearOfConstruction} setState={setYearOfConstruction} />
+                            {/*<div className={styles.fieldHelp}>新築は 0、改修案件は将来ロジックで補正</div>*/}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* 面積 */}
+            <section className={styles.section} aria-labelledby="sec-area">
+                <h2 id="sec-area">面積</h2>
+                <div className={styles.formCard}>
+                    <div className={`${styles.fieldGrid} ${styles.grid2}`}>
+                        <div className={styles.fieldRow}>
+                            <label className={styles.fieldLabel} htmlFor="gfa">総延床（㎡）</label>
+                            <NumberInputTypeMenu label="" state={area} setState={setArea} />
+                            <div className={styles.fieldHelp}>※一棟の総延床。1フロア×階数の二重計上に注意</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* 用途 */}
+            <section className={styles.section} aria-labelledby="sec-usage">
+                <h2 id="sec-usage">用途</h2>
+                <div className={styles.formCard}>
+                    <div className={styles.fieldGrid}>
+                        <SelectTypeMenu label="" selectList={usages} value={usage} onChange={setUsage} />
+                    </div>
+                </div>
+            </section>
+
             <section className={styles.section} aria-labelledby="ocr-section">
                 <h2 id="ocr-section">図面 &amp; OCR（任意・最大{MAX_FILES}枚）</h2>
                 <UploadSection files={files} setFiles={wrapperSetFiles} />
